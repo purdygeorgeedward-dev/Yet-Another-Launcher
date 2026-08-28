@@ -35,6 +35,18 @@ fostering trust and a community committed to privacy.
 
 Find your balance of speed, customization, and privacy with Fossify Launcher.
 
+## Yet-Another-Launcher enhancements
+
+This fork tracks a roadmap of ~205 potential features beyond upstream Fossify Launcher,
+grouped by implementation difficulty (Tier 1 trivial through Tier 5 very hard).
+
+**Shipped:**
+- Larger default icon size (55dp → 72dp)
+- Shared-preferences infrastructure for Tier 1 accessibility/customization settings
+  (haptic intensity, high contrast, dyslexia-friendly font, text size, dark mode
+  scheduling, one-handed mode, gaming/meeting mode, color blind modes, icon label
+  position, gradient folders, glassmorphism) — settings UI not yet wired up.
+
 ➡️ Explore more Fossify apps: https://www.fossify.org<br>
 ➡️ Open-Source Code: https://www.github.com/FossifyOrg<br>
 ➡️ Join the community on Reddit: https://www.reddit.com/r/Fossify<br>
