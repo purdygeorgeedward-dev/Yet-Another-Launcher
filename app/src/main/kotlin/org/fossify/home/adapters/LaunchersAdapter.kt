@@ -19,6 +19,7 @@ import com.bumptech.glide.request.transition.Transition
 import com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
 import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getColoredDrawableWithColor
+import org.fossify.commons.extensions.getContrastColor
 import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.realScreenSize
 import org.fossify.home.R
@@ -27,6 +28,7 @@ import org.fossify.home.databinding.ItemLauncherLabelBinding
 import org.fossify.home.extensions.animateScale
 import org.fossify.home.extensions.config
 import org.fossify.home.helpers.AccessibilityFontHelper
+import org.fossify.home.helpers.ColorBlindFilters
 import org.fossify.home.helpers.ICON_LABEL_POSITION_HIDDEN
 import org.fossify.home.helpers.ICON_LABEL_POSITION_RIGHT
 import org.fossify.home.helpers.TEXT_SIZE_EXTRA_LARGE
@@ -118,6 +120,13 @@ class LaunchersAdapter(
         )
     }
 
+    // Same shadow-boost approach as HomeScreenGrid's applyHighContrastSetting():
+    // strengthens the existing look rather than swapping in a whole separate theme.
+    private fun applyHighContrast(binding: ItemLauncherLabelBinding) {
+        val shadowRadius = if (activity.config.highContrastMode) 5f else 0f
+        binding.launcherLabel.setShadowLayer(shadowRadius, 0f, 0f, textColor.getContrastColor())
+    }
+
     // Repositions the label relative to the icon. RIGHT places it beside the icon;
     // anything else (BOTTOM, or HIDDEN where the label is invisible anyway) uses the
     // original below-icon layout. Views are recycled, so rules from a previous bind
@@ -157,12 +166,14 @@ class LaunchersAdapter(
                 binding.launcherLabel.setTextColor(textColor)
                 applyTextSize(binding)
                 applyAccessibilityFont(binding)
+                applyHighContrast(binding)
                 val labelPosition = activity.config.iconLabelPosition
                 binding.launcherLabel.beVisibleIf(
                     activity.config.showDrawerAppLabels && labelPosition != ICON_LABEL_POSITION_HIDDEN
                 )
                 applyIconLabelPosition(binding, labelPosition)
                 binding.launcherIcon.setPadding(iconPadding, iconPadding, iconPadding, 0)
+                binding.launcherIcon.colorFilter = ColorBlindFilters.getColorFilter(activity.config.colorBlindMode)
 
                 if (launcher.drawable != null && binding.launcherIcon.tag == true) {
                     binding.launcherIcon.setImageDrawable(launcher.drawable)

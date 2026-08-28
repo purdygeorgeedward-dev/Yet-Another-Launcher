@@ -11,11 +11,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.os.Bundle
@@ -32,6 +34,7 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.RelativeLayout
+import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
@@ -49,8 +52,9 @@ import org.fossify.commons.extensions.beGone
 import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.getContrastColor
 import org.fossify.commons.extensions.getProperBackgroundColor
+import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.getProperTextColor
-import org.fossify.commons.extensions.performHapticFeedback
+import org.fossify.home.extensions.performLauncherHapticFeedback
 import org.fossify.commons.helpers.FontHelper
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.helpers.isSPlus
@@ -61,6 +65,7 @@ import org.fossify.home.extensions.config
 import org.fossify.home.extensions.getDrawableForPackageName
 import org.fossify.home.extensions.homeScreenGridItemsDB
 import org.fossify.home.helpers.AccessibilityFontHelper
+import org.fossify.home.helpers.ColorBlindFilters
 import org.fossify.home.helpers.ITEM_TYPE_FOLDER
 import org.fossify.home.helpers.ITEM_TYPE_ICON
 import org.fossify.home.helpers.ITEM_TYPE_SHORTCUT
@@ -440,7 +445,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
                                     .count() >= HomeScreenGridItem.FOLDER_MAX_CAPACITY
                                 && draggedItem?.parentId != coveredFolder.id
                             ) {
-                                performHapticFeedback()
+                                performLauncherHapticFeedback()
                                 draggingEnteredNewFolderAt = null
                             } else {
                                 openFolder(coveredFolder)
@@ -775,7 +780,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
                 return
             }
         } else {
-            performHapticFeedback()
+            performLauncherHapticFeedback()
             redrawIcons = true
         }
 
@@ -796,7 +801,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         if (newParentId != null && newParentId != draggedHomeGridItem?.parentId) {
             gridItems.firstOrNull { it.id == newParentId }?.also {
                 if (it.toFolder().getItems().count() >= HomeScreenGridItem.FOLDER_MAX_CAPACITY) {
-                    performHapticFeedback()
+                    performLauncherHapticFeedback()
                     draggedItem = null
                     draggedItemCurrentCoords = Pair(-1, -1)
                     redrawGrid()
@@ -1076,7 +1081,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
                     }
                 }
             } else {
-                performHapticFeedback()
+                performLauncherHapticFeedback()
                 widgetViews.firstOrNull { it.tag == draggedItem?.widgetId }?.apply {
                     post {
                         beVisible()
@@ -1152,7 +1157,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
             val activity = context as? MainActivity
             if (activity?.isAllAppsFragmentExpanded() == false) {
                 activity.showHomeIconMenu(x, widgetView.y, item, false)
-                performHapticFeedback()
+                performLauncherHapticFeedback()
             }
         }
 
@@ -1245,6 +1250,16 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         contrastTextPaint.textSize = scaledSize
     }
 
+    // Builds a diagonal background-color-to-accent-color gradient for folder surfaces.
+    // Coordinates are absolute (not 0-based), so the same call works whether the
+    // canvas being drawn into is a fresh bitmap (origin 0,0) or the shared view
+    // canvas (folderRect sitting at some arbitrary position on screen).
+    private fun buildFolderGradientShader(left: Float, top: Float, right: Float, bottom: Float): LinearGradient {
+        val startColor = context.getProperBackgroundColor()
+        val endColor = ColorUtils.blendARGB(startColor, context.getProperPrimaryColor(), 0.3f)
+        return LinearGradient(left, top, right, bottom, startColor, endColor, Shader.TileMode.CLAMP)
+    }
+
     // Only reloads the typeface when the choice actually changed, since
     // ResourcesCompat.getFont has real per-call overhead we don't want every frame.
     private fun applyFontSetting() {
@@ -1259,6 +1274,15 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         appliedFontChoice = fontChoice
     }
 
+    // High contrast mode boosts the existing label shadow (already there for legibility
+    // against a busy wallpaper) rather than introducing a whole separate high-contrast
+    // theme - a much bigger, more invasive change this doesn't attempt.
+    private fun applyHighContrastSetting() {
+        val shadowRadius = if (context.config.highContrastMode) 5f else 2f
+        textPaint.setShadowLayer(shadowRadius, 0f, 0f, Color.BLACK)
+        contrastTextPaint.setShadowLayer(shadowRadius, 0f, 0f, context.getProperTextColor().getContrastColor())
+    }
+
     fun drawInto(canvas: Canvas) {
         if (cells.isEmpty()) {
             fillCellSizes()
@@ -1266,6 +1290,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
 
         applyTextSizeSetting()
         applyFontSetting()
+        applyHighContrastSetting()
 
         val currentXFactor = pager.getXFactorForCurrentPage()
         val lastXFactor = pager.getXFactorForLastPage()
@@ -1411,7 +1436,15 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
                     folderRect,
                     roundedCornerRadius / folder.scale,
                     roundedCornerRadius / folder.scale,
-                    folderBackgroundPaint
+                    folderBackgroundPaint.apply {
+                        shader = if (context.config.gradientFolderBackground) {
+                            buildFolderGradientShader(
+                                folderRect.left, folderRect.top, folderRect.right, folderRect.bottom
+                            )
+                        } else {
+                            null
+                        }
+                    }
                 )
                 val textX = folderRect.left + folderPadding
                 val textY = folderRect.top + folderPadding
@@ -1958,6 +1991,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
                 }
             }
 
+            drawable?.colorFilter = ColorBlindFilters.getColorFilter(context.config.colorBlindMode)
             drawable?.draw(this)
         }
     }
@@ -2044,6 +2078,11 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
                 )
             }
             canvas.clipPath(circlePath)
+            folderIconBackgroundPaint.shader = if (context.config.gradientFolderBackground) {
+                buildFolderGradientShader(0f, 0f, iconSize.toFloat(), iconSize.toFloat())
+            } else {
+                null
+            }
             canvas.drawPaint(folderIconBackgroundPaint)
             val folderColumnCount = ceil(sqrt(itemsCount.toDouble())).roundToInt()
             val folderRowCount = ceil(itemsCount.toFloat() / folderColumnCount).roundToInt()

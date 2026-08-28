@@ -51,7 +51,7 @@ import org.fossify.commons.extensions.getProperBackgroundColor
 import org.fossify.commons.extensions.insetsController
 import org.fossify.commons.extensions.isPackageInstalled
 import org.fossify.commons.extensions.onGlobalLayout
-import org.fossify.commons.extensions.performHapticFeedback
+import org.fossify.home.extensions.performLauncherHapticFeedback
 import org.fossify.commons.extensions.realScreenSize
 import org.fossify.commons.extensions.showErrorToast
 import org.fossify.commons.extensions.showKeyboard
@@ -700,7 +700,7 @@ class MainActivity : SimpleActivity(), FlingListener {
             return
         }
 
-        binding.mainHolder.performHapticFeedback()
+        binding.mainHolder.performLauncherHapticFeedback()
         showMainLongPressMenu(x, y)
     }
 
@@ -794,7 +794,7 @@ class MainActivity : SimpleActivity(), FlingListener {
 
     private fun performItemLongClick(x: Float, clickedGridItem: HomeScreenGridItem) {
         if (clickedGridItem.type == ITEM_TYPE_ICON || clickedGridItem.type == ITEM_TYPE_SHORTCUT || clickedGridItem.type == ITEM_TYPE_FOLDER) {
-            binding.mainHolder.performHapticFeedback()
+            binding.mainHolder.performLauncherHapticFeedback()
         }
 
         val anchorY = binding.homeScreenGrid.root.sideMargins.top +

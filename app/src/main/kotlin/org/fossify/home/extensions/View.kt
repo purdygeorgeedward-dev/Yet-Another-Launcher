@@ -14,6 +14,7 @@ import androidx.core.graphics.drawable.toDrawable
 import org.fossify.commons.R
 import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.commons.extensions.getProperBackgroundColor
+import org.fossify.commons.extensions.performHapticFeedback
 import org.fossify.commons.helpers.isSPlus
 
 fun View.animateScale(
@@ -29,6 +30,21 @@ fun View.animateScale(
         scaleX = from
         scaleY = from
     }
+
+// The system's performHapticFeedback(VIRTUAL_KEY, FLAG_IGNORE_GLOBAL_SETTING) - what
+// commons' performHapticFeedback() calls - has one fixed strength and needs no extra
+// permission. Real Low/Medium/High amplitude control would mean switching to raw
+// Vibrator.vibrate(VibrationEffect) calls, which needs the VIBRATE permission - a
+// real trade-off against this project's (and Fossify's generally) zero-extra-
+// permissions stance, not something to add silently for a settings slider. So this
+// only honors the setting's on/off ends: 0 disables haptics, anything above 0 keeps
+// the existing fixed-strength feedback. The Low/Medium/High distinction in the
+// settings UI doesn't currently produce a different physical sensation.
+fun View.performLauncherHapticFeedback() {
+    if (context.config.hapticFeedbackIntensity > 0) {
+        performHapticFeedback()
+    }
+}
 
 // Glassmorphism style constants. This is a translucency + highlight-border treatment,
 // not a real-time backdrop blur: genuinely blurring the wallpaper/home screen content
