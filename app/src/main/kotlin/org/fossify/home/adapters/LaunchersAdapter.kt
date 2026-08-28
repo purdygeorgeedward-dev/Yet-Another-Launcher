@@ -2,10 +2,12 @@ package org.fossify.home.adapters
 
 import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -23,6 +25,11 @@ import org.fossify.home.activities.SimpleActivity
 import org.fossify.home.databinding.ItemLauncherLabelBinding
 import org.fossify.home.extensions.animateScale
 import org.fossify.home.extensions.config
+import org.fossify.home.helpers.ICON_LABEL_POSITION_HIDDEN
+import org.fossify.home.helpers.ICON_LABEL_POSITION_RIGHT
+import org.fossify.home.helpers.TEXT_SIZE_EXTRA_LARGE
+import org.fossify.home.helpers.TEXT_SIZE_LARGE
+import org.fossify.home.helpers.TEXT_SIZE_SMALL
 import org.fossify.home.interfaces.AllAppsListener
 import org.fossify.home.models.AppLauncher
 
@@ -81,6 +88,49 @@ class LaunchersAdapter(
         }
     }
 
+    // Text size levels scale the drawer label off its original XML size rather than its
+    // current on-screen size, since views are recycled and would otherwise compound.
+    private fun applyTextSize(binding: ItemLauncherLabelBinding) {
+        val baseSizePx = binding.root.resources.getDimension(org.fossify.commons.R.dimen.smaller_text_size)
+        val scale = when (activity.config.textSizeLevel) {
+            TEXT_SIZE_SMALL -> 0.85f
+            TEXT_SIZE_LARGE -> 1.15f
+            TEXT_SIZE_EXTRA_LARGE -> 1.3f
+            else -> 1f
+        }
+        binding.launcherLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, baseSizePx * scale)
+    }
+
+    // Repositions the label relative to the icon. RIGHT places it beside the icon;
+    // anything else (BOTTOM, or HIDDEN where the label is invisible anyway) uses the
+    // original below-icon layout. Views are recycled, so rules from a previous bind
+    // are cleared first rather than only ever added.
+    private fun applyIconLabelPosition(binding: ItemLauncherLabelBinding, position: Int) {
+        val iconParams = binding.launcherIcon.layoutParams as RelativeLayout.LayoutParams
+        val labelParams = binding.launcherLabel.layoutParams as RelativeLayout.LayoutParams
+
+        labelParams.removeRule(RelativeLayout.BELOW)
+        labelParams.removeRule(RelativeLayout.END_OF)
+        labelParams.removeRule(RelativeLayout.CENTER_VERTICAL)
+
+        if (position == ICON_LABEL_POSITION_RIGHT) {
+            iconParams.width = iconParams.height
+            labelParams.width = RelativeLayout.LayoutParams.WRAP_CONTENT
+            labelParams.addRule(RelativeLayout.END_OF, binding.launcherIcon.id)
+            labelParams.addRule(RelativeLayout.CENTER_VERTICAL)
+            labelParams.marginStart =
+                binding.root.resources.getDimensionPixelSize(R.dimen.small_margin)
+        } else {
+            iconParams.width = RelativeLayout.LayoutParams.MATCH_PARENT
+            labelParams.width = RelativeLayout.LayoutParams.MATCH_PARENT
+            labelParams.addRule(RelativeLayout.BELOW, binding.launcherIcon.id)
+            labelParams.marginStart = 0
+        }
+
+        binding.launcherIcon.layoutParams = iconParams
+        binding.launcherLabel.layoutParams = labelParams
+    }
+
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         @SuppressLint("ClickableViewAccessibility")
         fun bindView(launcher: AppLauncher): View {
@@ -88,7 +138,12 @@ class LaunchersAdapter(
             itemView.apply {
                 binding.launcherLabel.text = launcher.title
                 binding.launcherLabel.setTextColor(textColor)
-                binding.launcherLabel.beVisibleIf(activity.config.showDrawerAppLabels)
+                applyTextSize(binding)
+                val labelPosition = activity.config.iconLabelPosition
+                binding.launcherLabel.beVisibleIf(
+                    activity.config.showDrawerAppLabels && labelPosition != ICON_LABEL_POSITION_HIDDEN
+                )
+                applyIconLabelPosition(binding, labelPosition)
                 binding.launcherIcon.setPadding(iconPadding, iconPadding, iconPadding, 0)
 
                 if (launcher.drawable != null && binding.launcherIcon.tag == true) {
