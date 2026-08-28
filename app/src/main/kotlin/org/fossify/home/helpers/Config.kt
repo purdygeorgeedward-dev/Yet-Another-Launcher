@@ -59,10 +59,10 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(HIGH_CONTRAST_MODE, false)
         set(highContrastMode) = prefs.edit().putBoolean(HIGH_CONTRAST_MODE, highContrastMode).apply()
 
-    /** Swaps the drawer/home label typeface for a dyslexia-friendly font. */
-    var dyslexiaFriendlyFont: Boolean
-        get() = prefs.getBoolean(DYSLEXIA_FRIENDLY_FONT, false)
-        set(dyslexiaFriendlyFont) = prefs.edit().putBoolean(DYSLEXIA_FRIENDLY_FONT, dyslexiaFriendlyFont).apply()
+    /** One of FONT_DEFAULT / FONT_LEXEND / FONT_OPEN_DYSLEXIC. */
+    var accessibilityFont: Int
+        get() = prefs.getInt(ACCESSIBILITY_FONT, FONT_DEFAULT)
+        set(accessibilityFont) = prefs.edit().putInt(ACCESSIBILITY_FONT, accessibilityFont).apply()
 
     /** One of TEXT_SIZE_SMALL / NORMAL / LARGE / EXTRA_LARGE. */
     var textSizeLevel: Int

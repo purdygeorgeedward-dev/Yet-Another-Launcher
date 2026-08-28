@@ -40,12 +40,21 @@ Find your balance of speed, customization, and privacy with Fossify Launcher.
 This fork tracks a roadmap of ~205 potential features beyond upstream Fossify Launcher,
 grouped by implementation difficulty (Tier 1 trivial through Tier 5 very hard).
 
-**Shipped:**
+**Shipped and working:**
 - Larger default icon size (55dp → 72dp)
-- Shared-preferences infrastructure for Tier 1 accessibility/customization settings
-  (haptic intensity, high contrast, dyslexia-friendly font, text size, dark mode
-  scheduling, one-handed mode, gaming/meeting mode, color blind modes, icon label
-  position, gradient folders, glassmorphism) — settings UI not yet wired up.
+- Icon label position (below/beside/hidden) in the app drawer
+- Text size scaling in the app drawer and home screen labels
+- Accessibility font choice: Lexend and OpenDyslexic are bundled as real
+  TrueType/OpenType fonts (both SIL Open Font License, license text in
+  `app/src/main/assets/font_licenses/`), applied to both the drawer and home
+  screen
+- Glassmorphism drawer/widgets background (translucency + highlight border;
+  not a real backdrop blur - see code comments in `extensions/View.kt`)
+
+**Settings UI exists, not yet wired into rendering:**
+High contrast mode, color blind modes, dark mode scheduling, one-handed mode,
+gaming/meeting mode, gradient folder backgrounds, haptic feedback intensity,
+icon label position on the home screen grid.
 
 ➡️ Explore more Fossify apps: https://www.fossify.org<br>
 ➡️ Open-Source Code: https://www.github.com/FossifyOrg<br>

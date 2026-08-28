@@ -16,6 +16,7 @@ import android.graphics.Path
 import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
@@ -59,6 +60,7 @@ import org.fossify.home.databinding.HomeScreenGridBinding
 import org.fossify.home.extensions.config
 import org.fossify.home.extensions.getDrawableForPackageName
 import org.fossify.home.extensions.homeScreenGridItemsDB
+import org.fossify.home.helpers.AccessibilityFontHelper
 import org.fossify.home.helpers.ITEM_TYPE_FOLDER
 import org.fossify.home.helpers.ITEM_TYPE_ICON
 import org.fossify.home.helpers.ITEM_TYPE_SHORTCUT
@@ -104,6 +106,8 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
     private var textPaint: TextPaint
     private var contrastTextPaint: TextPaint
     private var baseTextSizePx: Float = 0f
+    private var baseTypeface: Typeface? = null
+    private var appliedFontChoice: Int? = null
     private var folderTitleTextPaint: TextPaint
     private var dragShadowCirclePaint: Paint
     private var emptyPageIndicatorPaint: Paint
@@ -153,6 +157,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         ViewCompat.setAccessibilityDelegate(this, accessibilityHelper)
 
         val customTypeface = FontHelper.getTypeface(context)
+        baseTypeface = customTypeface
         baseTextSizePx = context.resources.getDimension(org.fossify.commons.R.dimen.smaller_text_size)
         textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
@@ -1240,12 +1245,27 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         contrastTextPaint.textSize = scaledSize
     }
 
+    // Only reloads the typeface when the choice actually changed, since
+    // ResourcesCompat.getFont has real per-call overhead we don't want every frame.
+    private fun applyFontSetting() {
+        val fontChoice = context.config.accessibilityFont
+        if (fontChoice == appliedFontChoice) {
+            return
+        }
+
+        val resolved = AccessibilityFontHelper.resolve(context, fontChoice, baseTypeface)
+        textPaint.typeface = resolved
+        contrastTextPaint.typeface = resolved
+        appliedFontChoice = fontChoice
+    }
+
     fun drawInto(canvas: Canvas) {
         if (cells.isEmpty()) {
             fillCellSizes()
         }
 
         applyTextSizeSetting()
+        applyFontSetting()
 
         val currentXFactor = pager.getXFactorForCurrentPage()
         val lastXFactor = pager.getXFactorForLastPage()

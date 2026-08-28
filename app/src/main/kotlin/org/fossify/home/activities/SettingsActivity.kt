@@ -23,6 +23,9 @@ import org.fossify.home.helpers.COLOR_BLIND_DEUTERANOPIA
 import org.fossify.home.helpers.COLOR_BLIND_NONE
 import org.fossify.home.helpers.COLOR_BLIND_PROTANOPIA
 import org.fossify.home.helpers.COLOR_BLIND_TRITANOPIA
+import org.fossify.home.helpers.FONT_DEFAULT
+import org.fossify.home.helpers.FONT_LEXEND
+import org.fossify.home.helpers.FONT_OPEN_DYSLEXIC
 import org.fossify.home.helpers.ICON_LABEL_POSITION_BOTTOM
 import org.fossify.home.helpers.ICON_LABEL_POSITION_HIDDEN
 import org.fossify.home.helpers.ICON_LABEL_POSITION_RIGHT
@@ -67,7 +70,7 @@ class SettingsActivity : SimpleActivity() {
         setupHomeColumnCount()
         setupShowHomeAppLabels()
         setupHighContrastMode()
-        setupDyslexiaFriendlyFont()
+        setupAccessibilityFont()
         setupTextSize()
         setupColorBlindMode()
         setupIconLabelPosition()
@@ -289,13 +292,32 @@ class SettingsActivity : SimpleActivity() {
         }
     }
 
-    private fun setupDyslexiaFriendlyFont() {
-        binding.settingsDyslexiaFriendlyFont.isChecked = config.dyslexiaFriendlyFont
-        binding.settingsDyslexiaFriendlyFontHolder.setOnClickListener {
-            binding.settingsDyslexiaFriendlyFont.toggle()
-            config.dyslexiaFriendlyFont = binding.settingsDyslexiaFriendlyFont.isChecked
+    private fun setupAccessibilityFont() {
+        binding.settingsAccessibilityFont.text = accessibilityFontLabel(config.accessibilityFont)
+        binding.settingsAccessibilityFontHolder.setOnClickListener {
+            val items = arrayListOf(
+                RadioItem(FONT_DEFAULT, getString(R.string.font_default)),
+                RadioItem(FONT_LEXEND, getString(R.string.font_lexend)),
+                RadioItem(FONT_OPEN_DYSLEXIC, getString(R.string.font_open_dyslexic))
+            )
+
+            RadioGroupDialog(this, items, config.accessibilityFont) {
+                val newFont = it as Int
+                if (config.accessibilityFont != newFont) {
+                    config.accessibilityFont = newFont
+                    setupAccessibilityFont()
+                }
+            }
         }
     }
+
+    private fun accessibilityFontLabel(font: Int) = getString(
+        when (font) {
+            FONT_LEXEND -> R.string.font_lexend
+            FONT_OPEN_DYSLEXIC -> R.string.font_open_dyslexic
+            else -> R.string.font_default
+        }
+    )
 
     private fun setupTextSize() {
         val currentLevel = config.textSizeLevel

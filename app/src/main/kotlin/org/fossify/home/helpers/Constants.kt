@@ -20,7 +20,7 @@ const val SHOW_HOME_APP_LABELS = "show_home_app_labels"
 // Pref keys backing Config.kt properties of the same purpose - see there for behavior.
 const val HAPTIC_FEEDBACK_INTENSITY = "haptic_feedback_intensity"
 const val HIGH_CONTRAST_MODE = "high_contrast_mode"
-const val DYSLEXIA_FRIENDLY_FONT = "dyslexia_friendly_font"
+const val ACCESSIBILITY_FONT = "accessibility_font"
 const val TEXT_SIZE_LEVEL = "text_size_level"
 const val DARK_MODE_SCHEDULING = "dark_mode_scheduling"
 const val DARK_MODE_START_HOUR = "dark_mode_start_hour"
@@ -40,6 +40,12 @@ const val TEXT_SIZE_SMALL = 0
 const val TEXT_SIZE_NORMAL = 1
 const val TEXT_SIZE_LARGE = 2
 const val TEXT_SIZE_EXTRA_LARGE = 3
+
+// accessibility font choice - actual bundled TrueType/OpenType fonts under res/font,
+// both OFL-licensed (license text bundled in assets/font_licenses)
+const val FONT_DEFAULT = 0
+const val FONT_LEXEND = 1
+const val FONT_OPEN_DYSLEXIC = 2
 
 // color blind mode types - determines which color filter matrix gets applied
 const val COLOR_BLIND_NONE = 0

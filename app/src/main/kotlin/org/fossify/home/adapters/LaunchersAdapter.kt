@@ -1,6 +1,7 @@
 package org.fossify.home.adapters
 
 import android.annotation.SuppressLint
+import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -25,6 +26,7 @@ import org.fossify.home.activities.SimpleActivity
 import org.fossify.home.databinding.ItemLauncherLabelBinding
 import org.fossify.home.extensions.animateScale
 import org.fossify.home.extensions.config
+import org.fossify.home.helpers.AccessibilityFontHelper
 import org.fossify.home.helpers.ICON_LABEL_POSITION_HIDDEN
 import org.fossify.home.helpers.ICON_LABEL_POSITION_RIGHT
 import org.fossify.home.helpers.TEXT_SIZE_EXTRA_LARGE
@@ -42,6 +44,7 @@ class LaunchersAdapter(
 
     private var textColor = activity.getProperTextColor()
     private var iconPadding = 0
+    private var originalLabelTypeface: Typeface? = null
 
     init {
         setHasStableIds(true)
@@ -62,6 +65,11 @@ class LaunchersAdapter(
         val binding = ItemLauncherLabelBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
+        if (originalLabelTypeface == null) {
+            // capture the style's typeface once, before any accessibility font override
+            // ever touches it - every instance of this layout shares the same style
+            originalLabelTypeface = binding.launcherLabel.typeface
+        }
         return ViewHolder(binding.root)
     }
 
@@ -99,6 +107,15 @@ class LaunchersAdapter(
             else -> 1f
         }
         binding.launcherLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, baseSizePx * scale)
+    }
+
+    // originalLabelTypeface is captured once in onCreateViewHolder, before any font
+    // override is applied - reading it back off a recycled view would just return
+    // whatever we set on its last bind.
+    private fun applyAccessibilityFont(binding: ItemLauncherLabelBinding) {
+        binding.launcherLabel.typeface = AccessibilityFontHelper.resolve(
+            activity, activity.config.accessibilityFont, originalLabelTypeface
+        )
     }
 
     // Repositions the label relative to the icon. RIGHT places it beside the icon;
@@ -139,6 +156,7 @@ class LaunchersAdapter(
                 binding.launcherLabel.text = launcher.title
                 binding.launcherLabel.setTextColor(textColor)
                 applyTextSize(binding)
+                applyAccessibilityFont(binding)
                 val labelPosition = activity.config.iconLabelPosition
                 binding.launcherLabel.beVisibleIf(
                     activity.config.showDrawerAppLabels && labelPosition != ICON_LABEL_POSITION_HIDDEN
