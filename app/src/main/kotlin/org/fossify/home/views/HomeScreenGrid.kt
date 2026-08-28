@@ -63,6 +63,9 @@ import org.fossify.home.helpers.ITEM_TYPE_FOLDER
 import org.fossify.home.helpers.ITEM_TYPE_ICON
 import org.fossify.home.helpers.ITEM_TYPE_SHORTCUT
 import org.fossify.home.helpers.ITEM_TYPE_WIDGET
+import org.fossify.home.helpers.TEXT_SIZE_EXTRA_LARGE
+import org.fossify.home.helpers.TEXT_SIZE_LARGE
+import org.fossify.home.helpers.TEXT_SIZE_SMALL
 import org.fossify.home.helpers.WIDGET_HOST_ID
 import org.fossify.home.models.HomeScreenGridItem
 import kotlin.math.abs
@@ -100,6 +103,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
     private var pageIndicatorMargin = context.resources.getDimension(R.dimen.page_indicator_margin)
     private var textPaint: TextPaint
     private var contrastTextPaint: TextPaint
+    private var baseTextSizePx: Float = 0f
     private var folderTitleTextPaint: TextPaint
     private var dragShadowCirclePaint: Paint
     private var emptyPageIndicatorPaint: Paint
@@ -149,16 +153,17 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         ViewCompat.setAccessibilityDelegate(this, accessibilityHelper)
 
         val customTypeface = FontHelper.getTypeface(context)
+        baseTextSizePx = context.resources.getDimension(org.fossify.commons.R.dimen.smaller_text_size)
         textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
-            textSize = context.resources.getDimension(org.fossify.commons.R.dimen.smaller_text_size)
+            textSize = baseTextSizePx
             setShadowLayer(2f, 0f, 0f, Color.BLACK)
             typeface = customTypeface
         }
 
         contrastTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = context.getProperTextColor()
-            textSize = context.resources.getDimension(org.fossify.commons.R.dimen.smaller_text_size)
+            textSize = baseTextSizePx
             setShadowLayer(2f, 0f, 0f, context.getProperTextColor().getContrastColor())
             typeface = customTypeface
         }
@@ -1220,10 +1225,27 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
 
     private fun getFakeHeight() = height - sideMargins.top - sideMargins.bottom
 
+    // Re-reads the text size preference every draw pass rather than caching it, since
+    // hit-rect and layout math elsewhere already read textPaint.textSize live - keeping
+    // this in sync here means those calculations stay correct with no other changes.
+    private fun applyTextSizeSetting() {
+        val scale = when (context.config.textSizeLevel) {
+            TEXT_SIZE_SMALL -> 0.85f
+            TEXT_SIZE_LARGE -> 1.15f
+            TEXT_SIZE_EXTRA_LARGE -> 1.3f
+            else -> 1f
+        }
+        val scaledSize = baseTextSizePx * scale
+        textPaint.textSize = scaledSize
+        contrastTextPaint.textSize = scaledSize
+    }
+
     fun drawInto(canvas: Canvas) {
         if (cells.isEmpty()) {
             fillCellSizes()
         }
+
+        applyTextSizeSetting()
 
         val currentXFactor = pager.getXFactorForCurrentPage()
         val lastXFactor = pager.getXFactorForLastPage()
