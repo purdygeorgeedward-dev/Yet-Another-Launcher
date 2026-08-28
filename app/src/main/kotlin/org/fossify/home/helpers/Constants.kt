@@ -16,6 +16,44 @@ const val AUTO_SHOW_KEYBOARD_IN_APP_DRAWER = "auto_show_keyboard_in_app_drawer"
 const val SHOW_DRAWER_APP_LABELS = "show_drawer_app_labels"
 const val SHOW_HOME_APP_LABELS = "show_home_app_labels"
 
+// accessibility / Tier 1 preferences
+// Pref keys backing Config.kt properties of the same purpose - see there for behavior.
+const val HAPTIC_FEEDBACK_INTENSITY = "haptic_feedback_intensity"
+const val HIGH_CONTRAST_MODE = "high_contrast_mode"
+const val DYSLEXIA_FRIENDLY_FONT = "dyslexia_friendly_font"
+const val TEXT_SIZE_LEVEL = "text_size_level"
+const val DARK_MODE_SCHEDULING = "dark_mode_scheduling"
+const val DARK_MODE_START_HOUR = "dark_mode_start_hour"
+const val DARK_MODE_START_MINUTE = "dark_mode_start_minute"
+const val DARK_MODE_END_HOUR = "dark_mode_end_hour"
+const val DARK_MODE_END_MINUTE = "dark_mode_end_minute"
+const val ONE_HANDED_MODE = "one_handed_mode"
+const val GAMING_MODE = "gaming_mode"
+const val MEETING_MODE = "meeting_mode"
+const val COLOR_BLIND_MODE = "color_blind_mode"
+const val ICON_LABEL_POSITION = "icon_label_position"
+const val GRADIENT_FOLDER_BACKGROUND = "gradient_folder_background"
+const val GLASSMORPHISM_UI = "glassmorphism_ui"
+
+// text size levels, ordered smallest to largest
+const val TEXT_SIZE_SMALL = 0
+const val TEXT_SIZE_NORMAL = 1
+const val TEXT_SIZE_LARGE = 2
+const val TEXT_SIZE_EXTRA_LARGE = 3
+
+// color blind mode types - determines which color filter matrix gets applied
+const val COLOR_BLIND_NONE = 0
+const val COLOR_BLIND_PROTANOPIA = 1
+const val COLOR_BLIND_DEUTERANOPIA = 2
+const val COLOR_BLIND_TRITANOPIA = 3
+
+// where the app label renders relative to its icon
+const val ICON_LABEL_POSITION_BOTTOM = 0
+const val ICON_LABEL_POSITION_RIGHT = 1
+const val ICON_LABEL_POSITION_HIDDEN = 2
+
+const val DEFAULT_HAPTIC_INTENSITY = 50
+
 // default home screen grid size
 const val ROW_COUNT = 6
 const val COLUMN_COUNT = 5

@@ -45,4 +45,84 @@ class Config(context: Context) : BaseConfig(context) {
     var showHomeAppLabels: Boolean
         get() = prefs.getBoolean(SHOW_HOME_APP_LABELS, true)
         set(showHomeAppLabels) = prefs.edit().putBoolean(SHOW_HOME_APP_LABELS, showHomeAppLabels).apply()
+
+    // --- Tier 1 accessibility / customization preferences ---
+    // Infrastructure only for now - not yet wired to a settings screen or consumed by any view.
+
+    /** Vibration strength for icon taps/long-presses, 0-100. */
+    var hapticFeedbackIntensity: Int
+        get() = prefs.getInt(HAPTIC_FEEDBACK_INTENSITY, DEFAULT_HAPTIC_INTENSITY)
+        set(hapticFeedbackIntensity) = prefs.edit().putInt(HAPTIC_FEEDBACK_INTENSITY, hapticFeedbackIntensity).apply()
+
+    /** Boosts text/icon contrast against the wallpaper for low-vision users. */
+    var highContrastMode: Boolean
+        get() = prefs.getBoolean(HIGH_CONTRAST_MODE, false)
+        set(highContrastMode) = prefs.edit().putBoolean(HIGH_CONTRAST_MODE, highContrastMode).apply()
+
+    /** Swaps the drawer/home label typeface for a dyslexia-friendly font. */
+    var dyslexiaFriendlyFont: Boolean
+        get() = prefs.getBoolean(DYSLEXIA_FRIENDLY_FONT, false)
+        set(dyslexiaFriendlyFont) = prefs.edit().putBoolean(DYSLEXIA_FRIENDLY_FONT, dyslexiaFriendlyFont).apply()
+
+    /** One of TEXT_SIZE_SMALL / NORMAL / LARGE / EXTRA_LARGE. */
+    var textSizeLevel: Int
+        get() = prefs.getInt(TEXT_SIZE_LEVEL, TEXT_SIZE_NORMAL)
+        set(textSizeLevel) = prefs.edit().putInt(TEXT_SIZE_LEVEL, textSizeLevel).apply()
+
+    /** If true, dark mode toggles automatically at the start/end times below. */
+    var darkModeScheduling: Boolean
+        get() = prefs.getBoolean(DARK_MODE_SCHEDULING, false)
+        set(darkModeScheduling) = prefs.edit().putBoolean(DARK_MODE_SCHEDULING, darkModeScheduling).apply()
+
+    /** Defaults to 8:00 PM - 7:00 AM. */
+    var darkModeStartHour: Int
+        get() = prefs.getInt(DARK_MODE_START_HOUR, 20)
+        set(darkModeStartHour) = prefs.edit().putInt(DARK_MODE_START_HOUR, darkModeStartHour).apply()
+
+    var darkModeStartMinute: Int
+        get() = prefs.getInt(DARK_MODE_START_MINUTE, 0)
+        set(darkModeStartMinute) = prefs.edit().putInt(DARK_MODE_START_MINUTE, darkModeStartMinute).apply()
+
+    var darkModeEndHour: Int
+        get() = prefs.getInt(DARK_MODE_END_HOUR, 7)
+        set(darkModeEndHour) = prefs.edit().putInt(DARK_MODE_END_HOUR, darkModeEndHour).apply()
+
+    var darkModeEndMinute: Int
+        get() = prefs.getInt(DARK_MODE_END_MINUTE, 0)
+        set(darkModeEndMinute) = prefs.edit().putInt(DARK_MODE_END_MINUTE, darkModeEndMinute).apply()
+
+    /** Shrinks and shifts the grid toward the thumb-reachable half of the screen. */
+    var oneHandedMode: Boolean
+        get() = prefs.getBoolean(ONE_HANDED_MODE, false)
+        set(oneHandedMode) = prefs.edit().putBoolean(ONE_HANDED_MODE, oneHandedMode).apply()
+
+    /** Fullscreen, no notification interruptions while a game is foregrounded. */
+    var gamingMode: Boolean
+        get() = prefs.getBoolean(GAMING_MODE, false)
+        set(gamingMode) = prefs.edit().putBoolean(GAMING_MODE, gamingMode).apply()
+
+    /** Silences badges/notifications on the launcher without touching system DND. */
+    var meetingMode: Boolean
+        get() = prefs.getBoolean(MEETING_MODE, false)
+        set(meetingMode) = prefs.edit().putBoolean(MEETING_MODE, meetingMode).apply()
+
+    /** One of COLOR_BLIND_NONE / PROTANOPIA / DEUTERANOPIA / TRITANOPIA. */
+    var colorBlindMode: Int
+        get() = prefs.getInt(COLOR_BLIND_MODE, COLOR_BLIND_NONE)
+        set(colorBlindMode) = prefs.edit().putInt(COLOR_BLIND_MODE, colorBlindMode).apply()
+
+    /** One of ICON_LABEL_POSITION_BOTTOM / RIGHT / HIDDEN. */
+    var iconLabelPosition: Int
+        get() = prefs.getInt(ICON_LABEL_POSITION, ICON_LABEL_POSITION_BOTTOM)
+        set(iconLabelPosition) = prefs.edit().putInt(ICON_LABEL_POSITION, iconLabelPosition).apply()
+
+    /** Renders folder backgrounds as a gradient instead of a flat fill. */
+    var gradientFolderBackground: Boolean
+        get() = prefs.getBoolean(GRADIENT_FOLDER_BACKGROUND, false)
+        set(gradientFolderBackground) = prefs.edit().putBoolean(GRADIENT_FOLDER_BACKGROUND, gradientFolderBackground).apply()
+
+    /** Frosted-glass/blur styling for drawer and folder surfaces. */
+    var glassmorphismUi: Boolean
+        get() = prefs.getBoolean(GLASSMORPHISM_UI, false)
+        set(glassmorphismUi) = prefs.edit().putBoolean(GLASSMORPHISM_UI, glassmorphismUi).apply()
 }
