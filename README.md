@@ -59,6 +59,13 @@ grouped by implementation difficulty (Tier 1 trivial through Tier 5 very hard).
   `helpers/LayoutBackupHelper.kt`)
 - Haptic feedback on/off toggle - see note below on why it's not a real
   intensity slider yet
+- Notification count badges (`FossifyOrg/Launcher#88`, 9 upvotes), drawer and
+  home screen alike. Opt-in and gated behind an explicit in-app disclosure
+  dialog before requesting Notification access - the broadest permission
+  Android has - since this is a real trade-off against Fossify's
+  no-intrusive-permissions stance, not a free feature. See
+  `services/NotificationBadgeListener.kt` and the "Notifications" section in
+  Settings.
 
 **Settings UI exists, not yet wired into rendering:**
 Dark mode scheduling, one-handed mode, gaming/meeting mode, icon label
@@ -74,13 +81,12 @@ zero-extra-permissions stance that wasn't made silently. See
 
 **Prioritization note:** rather than working straight down the 205-item
 list, real user demand was pulled from `FossifyOrg/Launcher`'s own GitHub
-issues sorted by upvotes. Top open asks: work profile support (23),
-folders in the drawer/dock (17-18), custom icon packs (17), notification
-badge numbers (9) - none started yet, each larger or riskier than what's
-above. Several of the next-highest-voted items are stability bugs (jerky
-animations, freezes, duplicated widgets), not features - fixing those
-responsibly needs a real device/emulator to reproduce against, which this
-environment doesn't have.
+issues sorted by upvotes. Top remaining open asks: work profile support
+(23), folders in the drawer/dock (17-18), custom icon packs (17) - none
+started yet, each larger or riskier than what's above. Several of the
+next-highest-voted items are stability bugs (jerky animations, freezes,
+duplicated widgets), not features - fixing those responsibly needs a real
+device/emulator to reproduce against, which this environment doesn't have.
 
 ➡️ Explore more Fossify apps: https://www.fossify.org<br>
 ➡️ Open-Source Code: https://www.github.com/FossifyOrg<br>
