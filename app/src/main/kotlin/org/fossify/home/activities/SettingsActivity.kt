@@ -19,10 +19,21 @@ import org.fossify.home.BuildConfig
 import org.fossify.home.R
 import org.fossify.home.databinding.ActivitySettingsBinding
 import org.fossify.home.extensions.config
+import org.fossify.home.helpers.COLOR_BLIND_DEUTERANOPIA
+import org.fossify.home.helpers.COLOR_BLIND_NONE
+import org.fossify.home.helpers.COLOR_BLIND_PROTANOPIA
+import org.fossify.home.helpers.COLOR_BLIND_TRITANOPIA
+import org.fossify.home.helpers.ICON_LABEL_POSITION_BOTTOM
+import org.fossify.home.helpers.ICON_LABEL_POSITION_HIDDEN
+import org.fossify.home.helpers.ICON_LABEL_POSITION_RIGHT
 import org.fossify.home.helpers.MAX_COLUMN_COUNT
 import org.fossify.home.helpers.MAX_ROW_COUNT
 import org.fossify.home.helpers.MIN_COLUMN_COUNT
 import org.fossify.home.helpers.MIN_ROW_COUNT
+import org.fossify.home.helpers.TEXT_SIZE_EXTRA_LARGE
+import org.fossify.home.helpers.TEXT_SIZE_LARGE
+import org.fossify.home.helpers.TEXT_SIZE_NORMAL
+import org.fossify.home.helpers.TEXT_SIZE_SMALL
 import org.fossify.home.receivers.LockDeviceAdminReceiver
 import java.util.Locale
 import kotlin.system.exitProcess
@@ -55,6 +66,18 @@ class SettingsActivity : SimpleActivity() {
         setupHomeRowCount()
         setupHomeColumnCount()
         setupShowHomeAppLabels()
+        setupHighContrastMode()
+        setupDyslexiaFriendlyFont()
+        setupTextSize()
+        setupColorBlindMode()
+        setupIconLabelPosition()
+        setupHapticIntensity()
+        setupOneHandedMode()
+        setupGamingMode()
+        setupMeetingMode()
+        setupDarkModeScheduling()
+        setupGradientFolderBackground()
+        setupGlassmorphismUi()
         setupLanguage()
         setupManageHiddenIcons()
         updateTextColors(binding.settingsHolder)
@@ -63,7 +86,8 @@ class SettingsActivity : SimpleActivity() {
             binding.settingsColorCustomizationSectionLabel,
             binding.settingsGeneralSettingsLabel,
             binding.settingsDrawerSettingsLabel,
-            binding.settingsHomeScreenLabel
+            binding.settingsHomeScreenLabel,
+            binding.settingsAccessibilityLabel
         ).forEach {
             it.setTextColor(getProperPrimaryColor())
         }
@@ -254,6 +278,193 @@ class SettingsActivity : SimpleActivity() {
         binding.settingsShowHomeAppLabelsHolder.setOnClickListener {
             binding.settingsShowHomeAppLabels.toggle()
             config.showHomeAppLabels = binding.settingsShowHomeAppLabels.isChecked
+        }
+    }
+
+    private fun setupHighContrastMode() {
+        binding.settingsHighContrastMode.isChecked = config.highContrastMode
+        binding.settingsHighContrastModeHolder.setOnClickListener {
+            binding.settingsHighContrastMode.toggle()
+            config.highContrastMode = binding.settingsHighContrastMode.isChecked
+        }
+    }
+
+    private fun setupDyslexiaFriendlyFont() {
+        binding.settingsDyslexiaFriendlyFont.isChecked = config.dyslexiaFriendlyFont
+        binding.settingsDyslexiaFriendlyFontHolder.setOnClickListener {
+            binding.settingsDyslexiaFriendlyFont.toggle()
+            config.dyslexiaFriendlyFont = binding.settingsDyslexiaFriendlyFont.isChecked
+        }
+    }
+
+    private fun setupTextSize() {
+        val currentLevel = config.textSizeLevel
+        binding.settingsTextSize.text = textSizeLabel(currentLevel)
+        binding.settingsTextSizeHolder.setOnClickListener {
+            val items = arrayListOf(
+                RadioItem(TEXT_SIZE_SMALL, getString(R.string.text_size_small)),
+                RadioItem(TEXT_SIZE_NORMAL, getString(R.string.text_size_normal)),
+                RadioItem(TEXT_SIZE_LARGE, getString(R.string.text_size_large)),
+                RadioItem(TEXT_SIZE_EXTRA_LARGE, getString(R.string.text_size_extra_large))
+            )
+
+            RadioGroupDialog(this, items, config.textSizeLevel) {
+                val newLevel = it as Int
+                if (config.textSizeLevel != newLevel) {
+                    config.textSizeLevel = newLevel
+                    setupTextSize()
+                }
+            }
+        }
+    }
+
+    private fun textSizeLabel(level: Int) = getString(
+        when (level) {
+            TEXT_SIZE_SMALL -> R.string.text_size_small
+            TEXT_SIZE_LARGE -> R.string.text_size_large
+            TEXT_SIZE_EXTRA_LARGE -> R.string.text_size_extra_large
+            else -> R.string.text_size_normal
+        }
+    )
+
+    private fun setupColorBlindMode() {
+        binding.settingsColorBlindMode.text = colorBlindModeLabel(config.colorBlindMode)
+        binding.settingsColorBlindModeHolder.setOnClickListener {
+            val items = arrayListOf(
+                RadioItem(COLOR_BLIND_NONE, getString(R.string.color_blind_none)),
+                RadioItem(COLOR_BLIND_PROTANOPIA, getString(R.string.color_blind_protanopia)),
+                RadioItem(COLOR_BLIND_DEUTERANOPIA, getString(R.string.color_blind_deuteranopia)),
+                RadioItem(COLOR_BLIND_TRITANOPIA, getString(R.string.color_blind_tritanopia))
+            )
+
+            RadioGroupDialog(this, items, config.colorBlindMode) {
+                val newMode = it as Int
+                if (config.colorBlindMode != newMode) {
+                    config.colorBlindMode = newMode
+                    setupColorBlindMode()
+                }
+            }
+        }
+    }
+
+    private fun colorBlindModeLabel(mode: Int) = getString(
+        when (mode) {
+            COLOR_BLIND_PROTANOPIA -> R.string.color_blind_protanopia
+            COLOR_BLIND_DEUTERANOPIA -> R.string.color_blind_deuteranopia
+            COLOR_BLIND_TRITANOPIA -> R.string.color_blind_tritanopia
+            else -> R.string.color_blind_none
+        }
+    )
+
+    private fun setupIconLabelPosition() {
+        binding.settingsIconLabelPosition.text = iconLabelPositionLabel(config.iconLabelPosition)
+        binding.settingsIconLabelPositionHolder.setOnClickListener {
+            val items = arrayListOf(
+                RadioItem(ICON_LABEL_POSITION_BOTTOM, getString(R.string.icon_label_position_bottom)),
+                RadioItem(ICON_LABEL_POSITION_RIGHT, getString(R.string.icon_label_position_right)),
+                RadioItem(ICON_LABEL_POSITION_HIDDEN, getString(R.string.icon_label_position_hidden))
+            )
+
+            RadioGroupDialog(this, items, config.iconLabelPosition) {
+                val newPosition = it as Int
+                if (config.iconLabelPosition != newPosition) {
+                    config.iconLabelPosition = newPosition
+                    setupIconLabelPosition()
+                }
+            }
+        }
+    }
+
+    private fun iconLabelPositionLabel(position: Int) = getString(
+        when (position) {
+            ICON_LABEL_POSITION_RIGHT -> R.string.icon_label_position_right
+            ICON_LABEL_POSITION_HIDDEN -> R.string.icon_label_position_hidden
+            else -> R.string.icon_label_position_bottom
+        }
+    )
+
+    // haptic intensity is stored as 0-100; the UI offers four presets that map onto that range
+    private fun setupHapticIntensity() {
+        binding.settingsHapticIntensity.text = hapticIntensityLabel(config.hapticFeedbackIntensity)
+        binding.settingsHapticIntensityHolder.setOnClickListener {
+            val items = arrayListOf(
+                RadioItem(0, getString(R.string.haptic_intensity_off)),
+                RadioItem(25, getString(R.string.haptic_intensity_low)),
+                RadioItem(50, getString(R.string.haptic_intensity_medium)),
+                RadioItem(100, getString(R.string.haptic_intensity_high))
+            )
+
+            RadioGroupDialog(this, items, closestHapticPreset(config.hapticFeedbackIntensity)) {
+                val newIntensity = it as Int
+                if (config.hapticFeedbackIntensity != newIntensity) {
+                    config.hapticFeedbackIntensity = newIntensity
+                    setupHapticIntensity()
+                }
+            }
+        }
+    }
+
+    private fun closestHapticPreset(value: Int) = when {
+        value <= 0 -> 0
+        value <= 25 -> 25
+        value <= 50 -> 50
+        else -> 100
+    }
+
+    private fun hapticIntensityLabel(value: Int) = getString(
+        when (closestHapticPreset(value)) {
+            0 -> R.string.haptic_intensity_off
+            25 -> R.string.haptic_intensity_low
+            50 -> R.string.haptic_intensity_medium
+            else -> R.string.haptic_intensity_high
+        }
+    )
+
+    private fun setupOneHandedMode() {
+        binding.settingsOneHandedMode.isChecked = config.oneHandedMode
+        binding.settingsOneHandedModeHolder.setOnClickListener {
+            binding.settingsOneHandedMode.toggle()
+            config.oneHandedMode = binding.settingsOneHandedMode.isChecked
+        }
+    }
+
+    private fun setupGamingMode() {
+        binding.settingsGamingMode.isChecked = config.gamingMode
+        binding.settingsGamingModeHolder.setOnClickListener {
+            binding.settingsGamingMode.toggle()
+            config.gamingMode = binding.settingsGamingMode.isChecked
+        }
+    }
+
+    private fun setupMeetingMode() {
+        binding.settingsMeetingMode.isChecked = config.meetingMode
+        binding.settingsMeetingModeHolder.setOnClickListener {
+            binding.settingsMeetingMode.toggle()
+            config.meetingMode = binding.settingsMeetingMode.isChecked
+        }
+    }
+
+    private fun setupDarkModeScheduling() {
+        binding.settingsDarkModeScheduling.isChecked = config.darkModeScheduling
+        binding.settingsDarkModeSchedulingHolder.setOnClickListener {
+            binding.settingsDarkModeScheduling.toggle()
+            config.darkModeScheduling = binding.settingsDarkModeScheduling.isChecked
+        }
+    }
+
+    private fun setupGradientFolderBackground() {
+        binding.settingsGradientFolderBackground.isChecked = config.gradientFolderBackground
+        binding.settingsGradientFolderBackgroundHolder.setOnClickListener {
+            binding.settingsGradientFolderBackground.toggle()
+            config.gradientFolderBackground = binding.settingsGradientFolderBackground.isChecked
+        }
+    }
+
+    private fun setupGlassmorphismUi() {
+        binding.settingsGlassmorphismUi.isChecked = config.glassmorphismUi
+        binding.settingsGlassmorphismUiHolder.setOnClickListener {
+            binding.settingsGlassmorphismUi.toggle()
+            config.glassmorphismUi = binding.settingsGlassmorphismUi.isChecked
         }
     }
 
