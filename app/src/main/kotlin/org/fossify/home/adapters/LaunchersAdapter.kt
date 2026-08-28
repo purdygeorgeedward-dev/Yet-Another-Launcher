@@ -17,6 +17,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.target.DrawableImageViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
+import org.fossify.commons.extensions.beGone
+import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getColoredDrawableWithColor
 import org.fossify.commons.extensions.getContrastColor
@@ -31,6 +33,7 @@ import org.fossify.home.helpers.AccessibilityFontHelper
 import org.fossify.home.helpers.ColorBlindFilters
 import org.fossify.home.helpers.ICON_LABEL_POSITION_HIDDEN
 import org.fossify.home.helpers.ICON_LABEL_POSITION_RIGHT
+import org.fossify.home.helpers.NotificationBadgeStore
 import org.fossify.home.helpers.TEXT_SIZE_EXTRA_LARGE
 import org.fossify.home.helpers.TEXT_SIZE_LARGE
 import org.fossify.home.helpers.TEXT_SIZE_SMALL
@@ -120,6 +123,23 @@ class LaunchersAdapter(
         )
     }
 
+    // Same red circle + count as HomeScreenGrid's drawNotificationBadge(), just as a
+    // real view here instead of a canvas draw since the drawer is a RecyclerView.
+    private fun applyNotificationBadge(binding: ItemLauncherLabelBinding, launcher: AppLauncher) {
+        val count = if (activity.config.showNotificationBadges) {
+            NotificationBadgeStore.getCount(launcher.packageName)
+        } else {
+            0
+        }
+
+        if (count > 0) {
+            binding.launcherBadge.text = if (count > 99) "99+" else count.toString()
+            binding.launcherBadge.beVisible()
+        } else {
+            binding.launcherBadge.beGone()
+        }
+    }
+
     // Same shadow-boost approach as HomeScreenGrid's applyHighContrastSetting():
     // strengthens the existing look rather than swapping in a whole separate theme.
     private fun applyHighContrast(binding: ItemLauncherLabelBinding) {
@@ -167,6 +187,7 @@ class LaunchersAdapter(
                 applyTextSize(binding)
                 applyAccessibilityFont(binding)
                 applyHighContrast(binding)
+                applyNotificationBadge(binding, launcher)
                 val labelPosition = activity.config.iconLabelPosition
                 binding.launcherLabel.beVisibleIf(
                     activity.config.showDrawerAppLabels && labelPosition != ICON_LABEL_POSITION_HIDDEN

@@ -168,7 +168,10 @@ class MainActivity : SimpleActivity(), FlingListener {
         handleIntentAction(intent)
 
         NotificationBadgeStore.onCountsChanged = {
-            runOnUiThread { binding.homeScreenGrid.root.refreshNotificationBadges() }
+            runOnUiThread {
+                binding.homeScreenGrid.root.refreshNotificationBadges()
+                binding.allAppsFragment.root.refreshNotificationBadges()
+            }
         }
 
         binding.homeScreenGrid.root.itemClickListener = {

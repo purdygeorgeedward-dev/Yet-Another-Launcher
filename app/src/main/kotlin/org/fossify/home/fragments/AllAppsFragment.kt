@@ -55,6 +55,17 @@ class AllAppsFragment(
         setupDrawerBackground()
     }
 
+    // Called from MainActivity when NotificationBadgeStore's counts change - same
+    // idea as HomeScreenGrid.refreshNotificationBadges(). Guarded since this can be
+    // hit before the adapter is attached (drawer not opened yet this session).
+    @SuppressLint("NotifyDataSetChanged")
+    fun refreshNotificationBadges() {
+        if (!::binding.isInitialized) {
+            return
+        }
+        (binding.allAppsGrid.adapter as? LaunchersAdapter)?.notifyDataSetChanged()
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     fun onResume() {
         if (binding.allAppsGrid.layoutManager == null || binding.allAppsGrid.adapter == null) {
