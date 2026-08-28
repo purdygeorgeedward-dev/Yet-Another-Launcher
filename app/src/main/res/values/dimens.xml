@@ -1,9 +1,9 @@
 <resources>
-    <dimen name="launcher_icon_size">55dp</dimen>
+    <dimen name="launcher_icon_size">72dp</dimen>
     <dimen name="icon_long_press_anchor_offset_y">150dp</dimen>
     <dimen name="long_press_anchor_button_offset_y">50dp</dimen>
     <dimen name="widget_preview_size">140dp</dimen>
-    <dimen name="icon_side_margin">10dp</dimen>
+    <dimen name="icon_side_margin">13dp</dimen>
     <dimen name="resize_frame_dot_radius">8dp</dimen>
     <dimen name="move_gesture_threshold">20dp</dimen>
     <dimen name="page_indicator_dot_radius">6dp</dimen>
