@@ -34,6 +34,7 @@ const val COLOR_BLIND_MODE = "color_blind_mode"
 const val ICON_LABEL_POSITION = "icon_label_position"
 const val GRADIENT_FOLDER_BACKGROUND = "gradient_folder_background"
 const val GLASSMORPHISM_UI = "glassmorphism_ui"
+const val SHOW_NOTIFICATION_BADGES = "show_notification_badges"
 
 // text size levels, ordered smallest to largest
 const val TEXT_SIZE_SMALL = 0

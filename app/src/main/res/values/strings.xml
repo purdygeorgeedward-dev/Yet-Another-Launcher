@@ -20,6 +20,7 @@
     <string name="lock_device_admin_hint">To enable the double tap to lock screen feature, you need to grant admin permission. Note that the app cannot be uninstalled until this permission is removed.</string>
     <string name="accessibility_settings">Accessibility</string>
     <string name="backup_restore">Backup &amp; restore</string>
+    <string name="notifications">Notifications</string>
     <string name="export_layout">Export home screen layout</string>
     <string name="import_layout">Import home screen layout</string>
     <string name="layout_export_success">Layout exported (%1$d items, %2$d widgets/shortcuts skipped)</string>
@@ -28,6 +29,10 @@
     <string name="layout_import_confirm_message">This adds the saved icons and folders on top of your current home screen. Items may overlap if the same positions are already in use.</string>
     <string name="layout_import_success">Imported %1$d items (%2$d skipped - app not installed)</string>
     <string name="layout_import_invalid_file">This doesn\'t look like a launcher layout backup file</string>
+    <string name="notification_badges">Notification badges</string>
+    <string name="notification_badges_permission_title">Grant notification access?</string>
+    <string name="notification_badges_permission_message">Badges need the "Notification access" permission, which lets this launcher read the content of every notification on your device, not just a count. This is the most far-reaching permission Android has. You\'ll be taken to a system settings screen to grant or review it.</string>
+    <string name="notification_badges_permission_not_granted">Badges are on, but notification access hasn\'t been granted yet - tap here to open system settings</string>
     <string name="high_contrast_mode">High contrast mode</string>
     <string name="accessibility_font">Accessibility font</string>
     <string name="font_default">Default</string>

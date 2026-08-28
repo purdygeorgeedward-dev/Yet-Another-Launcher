@@ -442,5 +442,23 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
+
+        <!--
+            Opt-in: only reads notifications to maintain a per-package unread count for
+            the notification badges setting. Requires the user to grant "Notification
+            access" separately in system settings - the most privacy-sensitive
+            permission on Android, since it's full read access to every notification's
+            content. See NotificationBadgeListener and SettingsActivity for how that
+            trade-off is explained to the user before this is ever requested.
+        -->
+        <service
+            android:name=".services.NotificationBadgeListener"
+            android:exported="true"
+            android:label="@string/app_launcher_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

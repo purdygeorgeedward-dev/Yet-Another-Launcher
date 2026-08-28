@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Process
 import android.util.Size
 import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationManagerCompat
 import org.fossify.commons.helpers.isQPlus
 import org.fossify.commons.helpers.isSPlus
 import org.fossify.home.databases.AppsDatabase
@@ -78,6 +79,12 @@ fun Context.getInitialCellSize(
 fun Context.getCellCount(size: Int): Int {
     val tiles = ceil(((size / resources.displayMetrics.density) - 30) / 70.0).toInt()
     return max(tiles, 1)
+}
+
+// Notification access is granted/revoked in system settings, not via the normal
+// runtime permission dialog - this is the standard way to check current status.
+fun Context.isNotificationBadgeAccessGranted(): Boolean {
+    return NotificationManagerCompat.getEnabledListenerPackages(this).contains(packageName)
 }
 
 fun Context.isDefaultLauncher(): Boolean {

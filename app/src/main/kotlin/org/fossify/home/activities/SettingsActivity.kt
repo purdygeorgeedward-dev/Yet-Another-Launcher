@@ -6,6 +6,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import org.fossify.commons.dialogs.ConfirmationDialog
 import org.fossify.commons.dialogs.RadioGroupDialog
 import org.fossify.commons.extensions.beVisibleIf
@@ -24,6 +25,7 @@ import org.fossify.home.BuildConfig
 import org.fossify.home.R
 import org.fossify.home.databinding.ActivitySettingsBinding
 import org.fossify.home.extensions.config
+import org.fossify.home.extensions.isNotificationBadgeAccessGranted
 import org.fossify.home.helpers.COLOR_BLIND_DEUTERANOPIA
 import org.fossify.home.helpers.COLOR_BLIND_NONE
 import org.fossify.home.helpers.COLOR_BLIND_PROTANOPIA
@@ -81,6 +83,7 @@ class SettingsActivity : SimpleActivity() {
         setupShowHomeAppLabels()
         setupExportLayout()
         setupImportLayout()
+        setupNotificationBadges()
         setupHighContrastMode()
         setupAccessibilityFont()
         setupTextSize()
@@ -103,6 +106,7 @@ class SettingsActivity : SimpleActivity() {
             binding.settingsDrawerSettingsLabel,
             binding.settingsHomeScreenLabel,
             binding.settingsBackupLabel,
+            binding.settingsNotificationsLabel,
             binding.settingsAccessibilityLabel
         ).forEach {
             it.setTextColor(getProperPrimaryColor())
@@ -384,6 +388,51 @@ class SettingsActivity : SimpleActivity() {
                 }
             }
         }
+    }
+
+    private fun setupNotificationBadges() {
+        binding.settingsNotificationBadges.isChecked = config.showNotificationBadges
+        updateNotificationBadgePermissionRow()
+
+        binding.settingsNotificationBadgesHolder.setOnClickListener {
+            val turningOn = !binding.settingsNotificationBadges.isChecked
+            if (turningOn && !isNotificationBadgeAccessGranted()) {
+                ConfirmationDialog(
+                    activity = this,
+                    message = getString(R.string.notification_badges_permission_message),
+                    dialogTitle = getString(R.string.notification_badges_permission_title)
+                ) {
+                    config.showNotificationBadges = true
+                    binding.settingsNotificationBadges.isChecked = true
+                    updateNotificationBadgePermissionRow()
+                    try {
+                        startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                    } catch (e: Exception) {
+                        showErrorToast(e)
+                    }
+                }
+            } else {
+                binding.settingsNotificationBadges.toggle()
+                config.showNotificationBadges = binding.settingsNotificationBadges.isChecked
+                updateNotificationBadgePermissionRow()
+            }
+        }
+
+        binding.settingsNotificationBadgesPermissionHolder.setOnClickListener {
+            try {
+                startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            } catch (e: Exception) {
+                showErrorToast(e)
+            }
+        }
+    }
+
+    // The permission row only shows when the user has asked for badges but hasn't
+    // (or no longer has) actually granted notification access - covers both "just
+    // turned it on" and "revoked it later in system settings without coming back here".
+    private fun updateNotificationBadgePermissionRow() {
+        val needsPermission = config.showNotificationBadges && !isNotificationBadgeAccessGranted()
+        binding.settingsNotificationBadgesPermissionHolder.beVisibleIf(needsPermission)
     }
 
     private fun setupHighContrastMode() {

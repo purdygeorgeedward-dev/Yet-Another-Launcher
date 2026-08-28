@@ -70,6 +70,7 @@ import org.fossify.home.helpers.ITEM_TYPE_FOLDER
 import org.fossify.home.helpers.ITEM_TYPE_ICON
 import org.fossify.home.helpers.ITEM_TYPE_SHORTCUT
 import org.fossify.home.helpers.ITEM_TYPE_WIDGET
+import org.fossify.home.helpers.NotificationBadgeStore
 import org.fossify.home.helpers.TEXT_SIZE_EXTRA_LARGE
 import org.fossify.home.helpers.TEXT_SIZE_LARGE
 import org.fossify.home.helpers.TEXT_SIZE_SMALL
@@ -119,6 +120,8 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
     private var currentPageIndicatorPaint: Paint
     private var folderBackgroundPaint: Paint
     private var folderIconBackgroundPaint: Paint
+    private var badgeBackgroundPaint: Paint
+    private var badgeTextPaint: TextPaint
     private var draggedItem: HomeScreenGridItem? = null
     private var resizedWidget: HomeScreenGridItem? = null
     private var isFirstDraw = true
@@ -206,6 +209,18 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         folderIconBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = context.getProperBackgroundColor().adjustAlpha(0.9f)
             style = Paint.Style.FILL
+        }
+
+        badgeBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = BADGE_BACKGROUND_COLOR
+            style = Paint.Style.FILL
+        }
+
+        badgeTextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            textSize = context.resources.getDimension(org.fossify.commons.R.dimen.smaller_text_size) * 0.75f
+            textAlign = Paint.Align.CENTER
+            typeface = Typeface.DEFAULT_BOLD
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
@@ -1231,6 +1246,11 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         }
     }
 
+    // Called from MainActivity when NotificationBadgeStore's counts change, so a
+    // notification arriving/clearing shows up on the grid without waiting for some
+    // unrelated redraw to happen to trigger it.
+    fun refreshNotificationBadges() = redrawGrid()
+
     private fun getFakeWidth() = width - sideMargins.left - sideMargins.right
 
     private fun getFakeHeight() = height - sideMargins.top - sideMargins.bottom
@@ -1936,6 +1956,21 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         }
     }
 
+    // Small filled circle with a count, top-right corner of the icon. Icons only
+    // (not folders, widgets, or shortcuts) - a per-folder aggregate count across its
+    // children would be a reasonable follow-up but adds real complexity for a first
+    // pass. "99+" caps the label so it never overflows the badge circle.
+    private fun Canvas.drawNotificationBadge(iconBounds: Rect, count: Int) {
+        val badgeRadius = iconSize * 0.16f
+        val centerX = iconBounds.right - badgeRadius
+        val centerY = iconBounds.top + badgeRadius
+        drawCircle(centerX, centerY, badgeRadius, badgeBackgroundPaint)
+
+        val label = if (count > 99) "99+" else count.toString()
+        val textY = centerY - (badgeTextPaint.ascent() + badgeTextPaint.descent()) / 2
+        drawText(label, centerX, textY, badgeTextPaint)
+    }
+
     private fun Canvas.drawItemInCell(item: HomeScreenGridItem, cell: Rect) {
         if (item.id != draggedItem?.id) {
             val drawableX = cell.left + iconMargin
@@ -1993,6 +2028,13 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
 
             drawable?.colorFilter = ColorBlindFilters.getColorFilter(context.config.colorBlindMode)
             drawable?.draw(this)
+
+            if (context.config.showNotificationBadges && item.type == ITEM_TYPE_ICON && drawable != null) {
+                val badgeCount = NotificationBadgeStore.getCount(item.packageName)
+                if (badgeCount > 0) {
+                    drawNotificationBadge(drawable.bounds, badgeCount)
+                }
+            }
         }
     }
 
@@ -2256,6 +2298,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         private const val FOLDER_OPEN_HOLD_THRESHOLD = 500L
         private const val FOLDER_CLOSE_HOLD_THRESHOLD = 300L
         private const val FOLDER_ANIMATION_DURATION = 200L
+        private const val BADGE_BACKGROUND_COLOR = 0xFFF44336.toInt() // Material red 500
     }
 }
 

@@ -125,4 +125,15 @@ class Config(context: Context) : BaseConfig(context) {
     var glassmorphismUi: Boolean
         get() = prefs.getBoolean(GLASSMORPHISM_UI, false)
         set(glassmorphismUi) = prefs.edit().putBoolean(GLASSMORPHISM_UI, glassmorphismUi).apply()
+
+    /**
+     * User's stated preference for showing notification count badges on icons.
+     * Deliberately opt-in (default false): turning this on is what triggers the
+     * Notification access permission prompt, since badges can't work without it.
+     * This flag alone doesn't mean badges are actually showing - the permission
+     * also has to be granted; see Context.isNotificationBadgeAccessGranted().
+     */
+    var showNotificationBadges: Boolean
+        get() = prefs.getBoolean(SHOW_NOTIFICATION_BADGES, false)
+        set(showNotificationBadges) = prefs.edit().putBoolean(SHOW_NOTIFICATION_BADGES, showNotificationBadges).apply()
 }

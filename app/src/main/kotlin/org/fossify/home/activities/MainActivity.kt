@@ -86,6 +86,7 @@ import org.fossify.home.helpers.ITEM_TYPE_ICON
 import org.fossify.home.helpers.ITEM_TYPE_SHORTCUT
 import org.fossify.home.helpers.ITEM_TYPE_WIDGET
 import org.fossify.home.helpers.IconCache
+import org.fossify.home.helpers.NotificationBadgeStore
 import org.fossify.home.helpers.REQUEST_ALLOW_BINDING_WIDGET
 import org.fossify.home.helpers.REQUEST_CONFIGURE_WIDGET
 import org.fossify.home.helpers.REQUEST_CREATE_SHORTCUT
@@ -165,6 +166,10 @@ class MainActivity : SimpleActivity(), FlingListener {
         }
 
         handleIntentAction(intent)
+
+        NotificationBadgeStore.onCountsChanged = {
+            runOnUiThread { binding.homeScreenGrid.root.refreshNotificationBadges() }
+        }
 
         binding.homeScreenGrid.root.itemClickListener = {
             performItemClick(it)
@@ -308,6 +313,7 @@ class MainActivity : SimpleActivity(), FlingListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        NotificationBadgeStore.onCountsChanged = null
         if (isOreoMr1Plus() && wallpaperColorChangeListener != null) {
             WallpaperManager.getInstance(this)
                 .removeOnColorsChangedListener(wallpaperColorChangeListener!!)
