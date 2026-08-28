@@ -50,11 +50,37 @@ grouped by implementation difficulty (Tier 1 trivial through Tier 5 very hard).
   screen
 - Glassmorphism drawer/widgets background (translucency + highlight border;
   not a real backdrop blur - see code comments in `extensions/View.kt`)
+- Color blind mode (protanopia/deuteranopia/tritanopia simulation filters) on
+  every icon, drawer and home screen alike
+- Gradient folder backgrounds, closed icon and open panel
+- High contrast mode (boosted label shadow), drawer and home screen
+- Home screen layout backup/export/import (JSON, icons and folders only -
+  widgets and shortcuts are deliberately excluded, see
+  `helpers/LayoutBackupHelper.kt`)
+- Haptic feedback on/off toggle - see note below on why it's not a real
+  intensity slider yet
 
 **Settings UI exists, not yet wired into rendering:**
-High contrast mode, color blind modes, dark mode scheduling, one-handed mode,
-gaming/meeting mode, gradient folder backgrounds, haptic feedback intensity,
-icon label position on the home screen grid.
+Dark mode scheduling, one-handed mode, gaming/meeting mode, icon label
+position on the home screen grid (drawer only so far - the home screen grid
+draws labels via `Canvas.drawText` and shares its coordinate math with
+drag/drop hit-rects, so repositioning there needs more care).
+
+**Known scope limitation:** haptic feedback intensity only gates on/off.
+Real Low/Medium/High amplitude control needs the `VIBRATE` permission (raw
+`Vibrator.vibrate(VibrationEffect)` calls) - a trade-off against Fossify's
+zero-extra-permissions stance that wasn't made silently. See
+`extensions/View.kt`.
+
+**Prioritization note:** rather than working straight down the 205-item
+list, real user demand was pulled from `FossifyOrg/Launcher`'s own GitHub
+issues sorted by upvotes. Top open asks: work profile support (23),
+folders in the drawer/dock (17-18), custom icon packs (17), notification
+badge numbers (9) - none started yet, each larger or riskier than what's
+above. Several of the next-highest-voted items are stability bugs (jerky
+animations, freezes, duplicated widgets), not features - fixing those
+responsibly needs a real device/emulator to reproduce against, which this
+environment doesn't have.
 
 ➡️ Explore more Fossify apps: https://www.fossify.org<br>
 ➡️ Open-Source Code: https://www.github.com/FossifyOrg<br>
