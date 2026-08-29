@@ -79,12 +79,22 @@ grouped by implementation difficulty (Tier 1 trivial through Tier 5 very hard).
   appears - home screen mirrors the existing folder-open ValueAnimator
   pattern, drawer animates the badge view directly
 
-**Settings UI exists, not yet wired into rendering:**
-Icon label position on the home screen grid (drawer only so far - the home
-screen grid draws labels via `Canvas.drawText` and shares its coordinate
-math with drag/drop hit-rects, so repositioning there needs more care).
+**Cut:** one-handed mode, dark mode scheduling, and extending icon label
+position to the home screen grid.
 
-**Cut:** one-handed mode and dark mode scheduling.
+Icon label position is real and shipped for the app drawer (below/beside/
+hidden). Extending it to the home screen grid was assessed and declined -
+not because it's low value, but because there's no safe partial version.
+The home screen's tap-target hit box (`getClickableRect`) extends
+downward to cover the label on the assumption it always sits below the
+icon; that same assumption feeds the accessibility node bounds and three
+separate cell-spacing calculations. BOTTOM and HIDDEN would be trivial but
+add nothing the existing `showHomeAppLabels` toggle doesn't already cover;
+RIGHT is the only new value and exactly the case that needs all of those
+call sites to agree on a different hit-box shape, verified by actually
+tapping/dragging on a device this environment doesn't have. The setting's
+label was updated to say "(app drawer)" so it doesn't read as
+home-screen-capable while sitting in a section next to things that are.
 
 One-handed mode's visual part (shrink/shift the grid toward the
 thumb-reachable half of the screen) is trivial, but touch input isn't
