@@ -17,6 +17,7 @@ import org.fossify.commons.helpers.isQPlus
 import org.fossify.commons.helpers.isSPlus
 import org.fossify.home.databases.AppsDatabase
 import org.fossify.home.helpers.Config
+import org.fossify.home.helpers.IconPackHelper
 import org.fossify.home.interfaces.AppLaunchersDao
 import org.fossify.home.interfaces.HiddenIconsDao
 import org.fossify.home.interfaces.HomeScreenGridItemsDao
@@ -41,6 +42,11 @@ val Context.roleManager: RoleManager
     get() = getSystemService(RoleManager::class.java)
 
 fun Context.getDrawableForPackageName(packageName: String): Drawable? {
+    val iconPackDrawable = IconPackHelper.getIconPackDrawable(this, config.iconPackPackage, packageName)
+    if (iconPackDrawable != null) {
+        return iconPackDrawable
+    }
+
     var drawable: Drawable? = null
     try {
         // try getting the properly colored launcher icons

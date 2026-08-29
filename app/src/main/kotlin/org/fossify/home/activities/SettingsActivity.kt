@@ -36,6 +36,8 @@ import org.fossify.home.helpers.FONT_OPEN_DYSLEXIC
 import org.fossify.home.helpers.ICON_LABEL_POSITION_BOTTOM
 import org.fossify.home.helpers.ICON_LABEL_POSITION_HIDDEN
 import org.fossify.home.helpers.ICON_LABEL_POSITION_RIGHT
+import org.fossify.home.helpers.IconPackHelper
+import org.fossify.home.helpers.InstalledIconPack
 import org.fossify.home.helpers.LayoutBackupHelper
 import org.fossify.home.helpers.MAX_COLUMN_COUNT
 import org.fossify.home.helpers.MAX_ROW_COUNT
@@ -73,6 +75,7 @@ class SettingsActivity : SimpleActivity() {
         setupCustomizeColors()
         setupUseEnglish()
         setupDoubleTapToLock()
+        setupIconPack()
         setupCloseAppDrawerOnOtherAppOpen()
         setupOpenKeyboardOnAppDrawer()
         setupDrawerColumnCount()
@@ -518,6 +521,43 @@ class SettingsActivity : SimpleActivity() {
                 }
             }
         }
+    }
+
+    // Only third-party icon pack apps (Lawnicons, Delta Icons, etc.) are
+    // supported here, via the de facto "org.adw.launcher.THEMES" convention -
+    // not Samsung's own Galaxy Themes icons, which are proprietary to One UI
+    // and never exposed through any standard Android API.
+    private fun setupIconPack() {
+        val installedPacks = IconPackHelper.getInstalledIconPacks(this)
+        binding.settingsIconPack.text = iconPackLabel(installedPacks, config.iconPackPackage)
+        binding.settingsIconPackHolder.setOnClickListener {
+            val items = arrayListOf(
+                RadioItem(0, getString(R.string.icon_pack_system_default), "")
+            )
+            installedPacks.forEachIndexed { index, pack ->
+                items.add(RadioItem(index + 1, pack.label, pack.packageName))
+            }
+
+            val checkedId = installedPacks.indexOfFirst { it.packageName == config.iconPackPackage }
+                .let { if (it == -1) 0 else it + 1 }
+
+            RadioGroupDialog(this, items, checkedId) {
+                val newPackage = it as String
+                if (config.iconPackPackage != newPackage) {
+                    config.iconPackPackage = newPackage
+                    IconPackHelper.clearCache()
+                    setupIconPack()
+                }
+            }
+        }
+    }
+
+    private fun iconPackLabel(installedPacks: List<InstalledIconPack>, packPackage: String): String {
+        if (packPackage.isEmpty()) {
+            return getString(R.string.icon_pack_system_default)
+        }
+        return installedPacks.firstOrNull { it.packageName == packPackage }?.label
+            ?: getString(R.string.icon_pack_system_default)
     }
 
     private fun colorBlindModeLabel(mode: Int) = getString(

@@ -88,6 +88,7 @@ import org.fossify.home.helpers.ITEM_TYPE_ICON
 import org.fossify.home.helpers.ITEM_TYPE_SHORTCUT
 import org.fossify.home.helpers.ITEM_TYPE_WIDGET
 import org.fossify.home.helpers.IconCache
+import org.fossify.home.helpers.IconPackHelper
 import org.fossify.home.helpers.NotificationBadgeStore
 import org.fossify.home.helpers.REQUEST_ALLOW_BINDING_WIDGET
 import org.fossify.home.helpers.REQUEST_CONFIGURE_WIDGET
@@ -1133,7 +1134,8 @@ class MainActivity : SimpleActivity(), FlingListener {
             }
 
             val label = info.loadLabel(packageManager).toString()
-            val drawable = info.loadIcon(packageManager)
+            val drawable = IconPackHelper.getIconPackDrawable(this, config.iconPackPackage, packageName, activityName)
+                ?: info.loadIcon(packageManager)
                 ?: getDrawableForPackageName(packageName)
                 ?: continue
 

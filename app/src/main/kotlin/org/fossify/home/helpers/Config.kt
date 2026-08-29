@@ -132,6 +132,16 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(SHOW_NOTIFICATION_BADGES, false)
         set(showNotificationBadges) = prefs.edit().putBoolean(SHOW_NOTIFICATION_BADGES, showNotificationBadges).apply()
 
+    /**
+     * Package name of the currently selected icon pack, or "" for the system
+     * default (no icon pack). Deliberately not included in
+     * resetAccessibilitySettings() - it's a visual preference, not an
+     * accessibility one, same reasoning as showNotificationBadges.
+     */
+    var iconPackPackage: String
+        get() = prefs.getString(ICON_PACK_PACKAGE, "") ?: ""
+        set(iconPackPackage) = prefs.edit().putString(ICON_PACK_PACKAGE, iconPackPackage).apply()
+
     // Deliberately excludes showNotificationBadges: that one required a real
     // permission grant flow, resetting it silently would be a surprising way to
     // revoke something the user went out of their way to set up.

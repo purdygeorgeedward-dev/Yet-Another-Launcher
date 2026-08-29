@@ -78,6 +78,30 @@ grouped by implementation difficulty (Tier 1 trivial through Tier 5 very hard).
 - Badge pop-in animation (overshoot scale) on both surfaces when a badge
   appears - home screen mirrors the existing folder-open ValueAnimator
   pattern, drawer animates the badge view directly
+- Custom icon pack support (`FossifyOrg/Launcher#22`, 17 upvotes - one of
+  the top three remaining upvoted asks, picked over work profile support and
+  drawer/dock folders as the lowest-risk of the three: no multi-user API
+  surface, no new interaction model, and every failure mode falls back to
+  the existing system icon unchanged). Supports third-party icon pack apps
+  (Lawnicons, Delta Icons, Whicons, etc.) via the de facto
+  `org.adw.launcher.THEMES` convention and `appfilter.xml` component
+  mapping - not Samsung's own Galaxy Themes icons, which are proprietary to
+  One UI and aren't exposed through any standard Android API. See
+  `helpers/IconPackHelper.kt`. Applied at all three places an app icon
+  actually gets loaded - home screen, drawer, and the hidden-icons manager
+  (`extensions/Context.kt`, `activities/MainActivity.kt`,
+  `activities/HiddenIconsActivity.kt`) - each checking the icon pack first
+  and falling through to their prior logic unchanged if no pack is selected
+  or a given app isn't mapped. Exact component match when an activity name
+  is available, package-name fallback (first match in the pack) when it
+  isn't. Every icon pack lookup - detection, `appfilter.xml` parsing,
+  resource resolution - is wrapped to fail safe to null rather than crash
+  or show a broken icon, since a missing pack, a malformed appfilter, or an
+  uninstalled-but-still-selected pack are all real states a user can end up
+  in. **Not verified on a real device with an actual icon pack installed** -
+  this environment has neither, so the `appfilter.xml` parsing logic is
+  implemented against the documented convention, not confirmed against a
+  live pack's real XML.
 
 **Cut:** one-handed mode, dark mode scheduling, and extending icon label
 position to the home screen grid.
@@ -123,12 +147,13 @@ zero-extra-permissions stance that wasn't made silently. See
 
 **Prioritization note:** rather than working straight down the 205-item
 list, real user demand was pulled from `FossifyOrg/Launcher`'s own GitHub
-issues sorted by upvotes. Top remaining open asks: work profile support
-(23), folders in the drawer/dock (17-18), custom icon packs (17) - none
-started yet, each larger or riskier than what's above. Several of the
-next-highest-voted items are stability bugs (jerky animations, freezes,
-duplicated widgets), not features - fixing those responsibly needs a real
-device/emulator to reproduce against, which this environment doesn't have.
+issues sorted by upvotes. Custom icon packs (#22, 17 upvotes) is now done -
+see above. Remaining open asks, larger or riskier than that one: work
+profile support (#48, 23 upvotes) and folders in the drawer/dock (#24 and
+#77, 17-18 upvotes). Several of the next-highest-voted items are stability
+bugs (jerky animations, freezes, duplicated widgets), not features - fixing
+those responsibly needs a real device/emulator to reproduce against, which
+this environment doesn't have.
 
 ➡️ Explore more Fossify apps: https://www.fossify.org<br>
 ➡️ Open-Source Code: https://www.github.com/FossifyOrg<br>

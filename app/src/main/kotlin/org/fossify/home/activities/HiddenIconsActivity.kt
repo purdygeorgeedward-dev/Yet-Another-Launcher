@@ -15,6 +15,7 @@ import org.fossify.home.databinding.ActivityHiddenIconsBinding
 import org.fossify.home.extensions.config
 import org.fossify.home.extensions.getDrawableForPackageName
 import org.fossify.home.extensions.hiddenIconsDB
+import org.fossify.home.helpers.IconPackHelper
 import org.fossify.home.models.HiddenIcon
 
 class HiddenIconsActivity : SimpleActivity(), RefreshRecyclerViewListener {
@@ -62,7 +63,9 @@ class HiddenIconsActivity : SimpleActivity(), RefreshRecyclerViewListener {
                     val packageName = componentInfo.packageName
                     val activityName = info.activityInfo.name
                     hiddenIcons.firstOrNull { it.getIconIdentifier() == "$packageName/$activityName" }?.apply {
-                        drawable = info.loadIcon(packageManager) ?: getDrawableForPackageName(packageName)
+                        drawable = IconPackHelper.getIconPackDrawable(this@HiddenIconsActivity, config.iconPackPackage, packageName, activityName)
+                            ?: info.loadIcon(packageManager)
+                            ?: getDrawableForPackageName(packageName)
                     }
                 }
 
