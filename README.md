@@ -75,14 +75,18 @@ grouped by implementation difficulty (Tier 1 trivial through Tier 5 very hard).
   canvas-drawn on the home screen
 - "Reset accessibility settings to defaults" in Settings, gated behind a
   confirmation dialog
+- Badge pop-in animation (overshoot scale) on both surfaces when a badge
+  appears - home screen mirrors the existing folder-open ValueAnimator
+  pattern, drawer animates the badge view directly
 
 **Settings UI exists, not yet wired into rendering:**
-Dark mode scheduling, icon label position on the home screen grid (drawer
-only so far - the home screen grid draws labels via `Canvas.drawText` and
-shares its coordinate math with drag/drop hit-rects, so repositioning there
-needs more care).
+Icon label position on the home screen grid (drawer only so far - the home
+screen grid draws labels via `Canvas.drawText` and shares its coordinate
+math with drag/drop hit-rects, so repositioning there needs more care).
 
-**Cut:** one-handed mode. The visual part (shrink/shift the grid toward the
+**Cut:** one-handed mode and dark mode scheduling.
+
+One-handed mode's visual part (shrink/shift the grid toward the
 thumb-reachable half of the screen) is trivial, but touch input isn't
 centralized - drag-and-drop and gesture handling live across `MainActivity`
 and `HomeScreenGrid`, and every one of those raw-coordinate consumers
@@ -91,6 +95,15 @@ transform means threading a coordinate conversion through several
 independent touch paths with no device available here to verify dragging
 actually still works afterward. Removed the dead settings toggle rather
 than leave a switch in the shipped UI that does nothing.
+
+Dark mode scheduling doesn't fit this app's theming model at all -
+`textColor`/`backgroundColor`/`primaryColor`/`accentColor` are arbitrary
+user-picked colors via a color wheel, not a light/dark toggle (confirmed
+by reading Fossify's actual `BaseConfig.kt`, not assumed). "Scheduling" it
+would mean either silently overwriting the user's hand-picked colors on a
+timer, or building a whole new dual-palette save/restore system - the
+first is a real trust violation for a customization-focused launcher, the
+second is nowhere near "easy." Left parked rather than forced.
 
 **Known scope limitation:** haptic feedback intensity only gates on/off.
 Real Low/Medium/High amplitude control needs the `VIBRATE` permission (raw
