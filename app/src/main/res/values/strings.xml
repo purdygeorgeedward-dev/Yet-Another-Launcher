@@ -45,7 +45,7 @@
     <string name="glassmorphism_ui">Glassmorphism UI</string>
     <string name="text_size">Text size</string>
     <string name="color_blind_mode">Color blind mode</string>
-    <string name="icon_label_position">Icon label position</string>
+    <string name="icon_label_position">Icon label position (app drawer)</string>
     <string name="haptic_feedback_intensity">Haptic feedback intensity</string>
     <string name="text_size_small">Small</string>
     <string name="text_size_normal">Normal</string>
