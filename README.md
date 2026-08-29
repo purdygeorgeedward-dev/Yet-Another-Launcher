@@ -66,12 +66,21 @@ grouped by implementation difficulty (Tier 1 trivial through Tier 5 very hard).
   no-intrusive-permissions stance, not a free feature. See
   `services/NotificationBadgeListener.kt` and the "Notifications" section in
   Settings.
+- Meeting mode and gaming mode suppress notification badges on both
+  surfaces; gaming mode also applies immersive fullscreen (manual toggle,
+  not tied to detecting an actual running game, which would need
+  usage-stats access)
+- Notification badges are announced to screen readers (TalkBack), both
+  surfaces - closes a real accessibility gap introduced when badges shipped
+  canvas-drawn on the home screen
+- "Reset accessibility settings to defaults" in Settings, gated behind a
+  confirmation dialog
 
 **Settings UI exists, not yet wired into rendering:**
-Dark mode scheduling, gaming/meeting mode, icon label position on the home
-screen grid (drawer only so far - the home screen grid draws labels via
-`Canvas.drawText` and shares its coordinate math with drag/drop hit-rects,
-so repositioning there needs more care).
+Dark mode scheduling, icon label position on the home screen grid (drawer
+only so far - the home screen grid draws labels via `Canvas.drawText` and
+shares its coordinate math with drag/drop hit-rects, so repositioning there
+needs more care).
 
 **Cut:** one-handed mode. The visual part (shrink/shift the grid toward the
 thumb-reachable half of the screen) is trivial, but touch input isn't
