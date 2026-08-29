@@ -117,6 +117,23 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
     private var appliedFontChoice: Int? = null
     private var badgePulseScale = 1f
     private var badgePulseAnimator: ValueAnimator? = null
+    // generateDrawable() composites a bitmap from scratch (new Canvas, new
+    // Path, mutated copies of every child icon) - expensive enough that
+    // redrawing it on every single animation frame is a real source of
+    // jank (e.g. the folder-open animation, which invalidates the whole
+    // grid on every frame via redrawGrid()). Cached per folder id, keyed by
+    // a signature of whatever actually changes its appearance; regenerated
+    // only when that signature changes, not on every draw call.
+    private val folderThumbnailCache = mutableMapOf<Long, FolderThumbnailCacheEntry>()
+    // Same reasoning as folderThumbnailCache: StaticLayout.Builder does real
+    // text-layout work (line breaking, ellipsizing) that's wasteful to redo
+    // on every draw call for every visible icon label when none of its
+    // inputs have actually changed. Keyed by item id; the signature reads
+    // straight from the three settings that actually affect textPaint /
+    // contrastTextPaint's rendering (applyTextSizeSetting/applyFontSetting/
+    // applyHighContrastSetting) rather than trying to hash the mutated Paint
+    // objects themselves, which don't reliably expose that state pre-API 31.
+    private val labelLayoutCache = mutableMapOf<Long, LabelLayoutCacheEntry>()
     private var folderTitleTextPaint: TextPaint
     private var dragShadowCirclePaint: Paint
     private var emptyPageIndicatorPaint: Paint
@@ -2041,23 +2058,40 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
                 if (item.id != draggedItem?.id && item.title.isNotEmpty() && context.config.showHomeAppLabels) {
                     val textX = cell.left.toFloat() + labelSideMargin
                     val textY = cell.top.toFloat() + iconSize + iconMargin + labelSideMargin
-                    val textPaintToUse = if (item.parentId == null) {
-                        textPaint
-                    } else {
+                    val useContrastPaint = item.parentId != null
+                    val textPaintToUse = if (useContrastPaint) {
                         contrastTextPaint
+                    } else {
+                        textPaint
                     }
-                    val staticLayout = StaticLayout.Builder
-                        .obtain(
-                            item.title,
-                            0,
-                            item.title.length,
-                            textPaintToUse,
-                            cellWidth - 2 * labelSideMargin
-                        )
-                        .setMaxLines(2)
-                        .setEllipsize(TextUtils.TruncateAt.END)
-                        .setAlignment(Layout.Alignment.ALIGN_CENTER)
-                        .build()
+                    val labelWidth = cellWidth - 2 * labelSideMargin
+                    val itemId = item.id
+                    val signature = "${item.title}|$labelWidth|$useContrastPaint|" +
+                        "${context.config.textSizeLevel}|${context.config.accessibilityFont}|" +
+                        context.config.highContrastMode
+
+                    val cached = if (itemId != null) labelLayoutCache[itemId] else null
+                    val staticLayout = if (cached != null && cached.signature == signature) {
+                        cached.layout
+                    } else {
+                        StaticLayout.Builder
+                            .obtain(
+                                item.title,
+                                0,
+                                item.title.length,
+                                textPaintToUse,
+                                labelWidth
+                            )
+                            .setMaxLines(2)
+                            .setEllipsize(TextUtils.TruncateAt.END)
+                            .setAlignment(Layout.Alignment.ALIGN_CENTER)
+                            .build()
+                            .also {
+                                if (itemId != null) {
+                                    labelLayoutCache[itemId] = LabelLayoutCacheEntry(signature, it)
+                                }
+                            }
+                    }
 
                     withTranslation(textX, textY) {
                         staticLayout.draw(this)
@@ -2097,6 +2131,11 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
 
     private fun HomeScreenGridItem.toFolder(animateOpening: Boolean = false) =
         HomeScreenFolder(this, animateOpening)
+
+    /** [signature] captures whatever generateDrawable()'s output actually depends on. */
+    private data class FolderThumbnailCacheEntry(val signature: String, val drawable: Drawable)
+
+    private data class LabelLayoutCacheEntry(val signature: String, val layout: StaticLayout)
 
     private inner class HomeScreenFolder(
         val item: HomeScreenGridItem,
@@ -2142,10 +2181,40 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
             }
 
             val items = getItems()
-            val itemsCount = getItems().count()
-
-            if (itemsCount == 0) {
+            if (items.isEmpty()) {
                 return null
+            }
+
+            // Cache key covers everything the composited bitmap actually
+            // depends on: which items are in the folder and in what order
+            // (position in the grid), the render size, the gradient
+            // setting, and a cheap identity check on each item's drawable
+            // (constantState survives across drawable copies of the same
+            // underlying icon, so this doesn't false-invalidate on the
+            // per-draw newDrawable()/mutate() calls elsewhere in this
+            // file - it only changes if the actual icon changes, e.g. an
+            // icon pack switch). A signature mismatch is the only
+            // invalidation path - simpler and harder to get out of sync
+            // than trying to catch every folder-mutation call site.
+            val folderId = item.id
+            val signature = buildString {
+                append(iconSize)
+                append('|')
+                append(context.config.gradientFolderBackground)
+                append('|')
+                items.forEach {
+                    append(it.id)
+                    append(':')
+                    append(it.drawable?.constantState?.hashCode() ?: 0)
+                    append(',')
+                }
+            }
+
+            if (folderId != null) {
+                val cached = folderThumbnailCache[folderId]
+                if (cached != null && cached.signature == signature) {
+                    return cached.drawable
+                }
             }
 
             val bitmap = createBitmap(iconSize, iconSize)
@@ -2165,6 +2234,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
                 null
             }
             canvas.drawPaint(folderIconBackgroundPaint)
+            val itemsCount = items.count()
             val folderColumnCount = ceil(sqrt(itemsCount.toDouble())).roundToInt()
             val folderRowCount = ceil(itemsCount.toFloat() / folderColumnCount).roundToInt()
             val scaledCellSize = (iconSize.toFloat() / folderColumnCount)
@@ -2187,7 +2257,13 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
                 )
                 newDrawable?.draw(canvas)
             }
-            return bitmap.toDrawable(resources)
+            val result = bitmap.toDrawable(resources)
+
+            if (folderId != null) {
+                folderThumbnailCache[folderId] = FolderThumbnailCacheEntry(signature, result)
+            }
+
+            return result
         }
 
         fun getDrawingRect(): RectF {

@@ -102,6 +102,41 @@ grouped by implementation difficulty (Tier 1 trivial through Tier 5 very hard).
   this environment has neither, so the `appfilter.xml` parsing logic is
   implemented against the documented convention, not confirmed against a
   live pack's real XML.
+- Folder thumbnail and icon label caching, targeting `FossifyOrg/Launcher#66`
+  (slow/jerky animation opening a folder or swiping between screens, 7
+  upvotes). Traced to two real, verified costs in `HomeScreenGrid.kt`, not
+  guessed: `HomeScreenFolder.generateDrawable()` was compositing a brand-new
+  bitmap (fresh `Canvas`, clip `Path`, gradient shader, mutated copies of
+  every child icon) from scratch on every single draw call for every folder
+  on screen, and the per-icon label's `StaticLayout` (real text
+  layout/line-breaking, not cheap) was rebuilt from scratch for every
+  visible icon on every draw call too. Both get invoked on every animation
+  frame during a folder open/close, since `redrawGrid()` (used by that
+  animation's `ValueAnimator`) invalidates the whole grid with no dirty
+  region - so animating one folder's scale was repainting and
+  re-compositing every icon and label on the page, every frame.
+  Both are now cached: folder thumbnails keyed by folder id, labels keyed by
+  item id, each invalidated by a signature covering exactly what its output
+  actually depends on (folder: child item ids/order, render size, gradient
+  setting, and a `constantState` identity check per child icon so an icon
+  pack switch still invalidates correctly; label: title, cell width, which
+  paint, and the three settings - text size, font, high contrast - that
+  determine that paint's actual rendering, read directly from Config rather
+  than introspecting the mutated `Paint` object, which doesn't reliably
+  expose shadow-layer state pre-API 31). A signature mismatch is the only
+  invalidation path, rather than trying to catch every mutation call site.
+  **Known, disclosed gap:** neither cache is pruned when a folder or icon is
+  deleted from the grid - the stale entry just sits unused keyed by an id
+  that no longer exists. Bounded by how many distinct folders/icons a
+  device has ever shown in one running session (realistically dozens, not
+  a real memory concern), but not zero, and not addressed here. **Not
+  verified on a real device** - reasoned from the actual draw-loop code and
+  Android's documented `StaticLayout`/`Paint`/`Drawable.ConstantState`
+  behavior, not confirmed against a live frame-timing profile, since this
+  environment has neither a device nor an emulator to capture one on.
+  Issue `FossifyOrg/Launcher#69` (freeze until force-quit during screen
+  swipe, 6 upvotes) was investigated too, but no comparably concrete cause
+  was found in the pager/swipe code - not claimed as fixed.
 
 **Cut:** one-handed mode, dark mode scheduling, and extending icon label
 position to the home screen grid.
