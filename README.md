@@ -68,10 +68,20 @@ grouped by implementation difficulty (Tier 1 trivial through Tier 5 very hard).
   Settings.
 
 **Settings UI exists, not yet wired into rendering:**
-Dark mode scheduling, one-handed mode, gaming/meeting mode, icon label
-position on the home screen grid (drawer only so far - the home screen grid
-draws labels via `Canvas.drawText` and shares its coordinate math with
-drag/drop hit-rects, so repositioning there needs more care).
+Dark mode scheduling, gaming/meeting mode, icon label position on the home
+screen grid (drawer only so far - the home screen grid draws labels via
+`Canvas.drawText` and shares its coordinate math with drag/drop hit-rects,
+so repositioning there needs more care).
+
+**Cut:** one-handed mode. The visual part (shrink/shift the grid toward the
+thumb-reachable half of the screen) is trivial, but touch input isn't
+centralized - drag-and-drop and gesture handling live across `MainActivity`
+and `HomeScreenGrid`, and every one of those raw-coordinate consumers
+assumes screen space matches grid space. Making that hold under a visual
+transform means threading a coordinate conversion through several
+independent touch paths with no device available here to verify dragging
+actually still works afterward. Removed the dead settings toggle rather
+than leave a switch in the shipped UI that does nothing.
 
 **Known scope limitation:** haptic feedback intensity only gates on/off.
 Real Low/Medium/High amplitude control needs the `VIBRATE` permission (raw

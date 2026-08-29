@@ -557,22 +557,6 @@
             </RelativeLayout>
 
             <RelativeLayout
-                android:id="@+id/settings_one_handed_mode_holder"
-                style="@style/SettingsHolderSwitchStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ripple_background">
-
-                <org.fossify.commons.views.MyMaterialSwitch
-                    android:id="@+id/settings_one_handed_mode"
-                    style="@style/SettingsSwitchStyle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/one_handed_mode" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
                 android:id="@+id/settings_gaming_mode_holder"
                 style="@style/SettingsHolderSwitchStyle"
                 android:layout_width="match_parent"

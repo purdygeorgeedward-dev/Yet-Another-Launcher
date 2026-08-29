@@ -90,7 +90,6 @@ class SettingsActivity : SimpleActivity() {
         setupColorBlindMode()
         setupIconLabelPosition()
         setupHapticIntensity()
-        setupOneHandedMode()
         setupGamingMode()
         setupMeetingMode()
         setupDarkModeScheduling()
@@ -592,14 +591,6 @@ class SettingsActivity : SimpleActivity() {
             else -> R.string.haptic_intensity_high
         }
     )
-
-    private fun setupOneHandedMode() {
-        binding.settingsOneHandedMode.isChecked = config.oneHandedMode
-        binding.settingsOneHandedModeHolder.setOnClickListener {
-            binding.settingsOneHandedMode.toggle()
-            config.oneHandedMode = binding.settingsOneHandedMode.isChecked
-        }
-    }
 
     private fun setupGamingMode() {
         binding.settingsGamingMode.isChecked = config.gamingMode

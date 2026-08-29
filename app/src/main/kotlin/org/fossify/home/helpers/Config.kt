@@ -91,11 +91,6 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getInt(DARK_MODE_END_MINUTE, 0)
         set(darkModeEndMinute) = prefs.edit().putInt(DARK_MODE_END_MINUTE, darkModeEndMinute).apply()
 
-    /** Shrinks and shifts the grid toward the thumb-reachable half of the screen. */
-    var oneHandedMode: Boolean
-        get() = prefs.getBoolean(ONE_HANDED_MODE, false)
-        set(oneHandedMode) = prefs.edit().putBoolean(ONE_HANDED_MODE, oneHandedMode).apply()
-
     /** Fullscreen, no notification interruptions while a game is foregrounded. */
     var gamingMode: Boolean
         get() = prefs.getBoolean(GAMING_MODE, false)
