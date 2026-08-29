@@ -8,7 +8,9 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.OvershootInterpolator
 import android.widget.RelativeLayout
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -134,11 +136,25 @@ class LaunchersAdapter(
         }
 
         if (count > 0) {
+            val wasHidden = !binding.launcherBadge.isVisible
             binding.launcherBadge.text = if (count > 99) "99+" else count.toString()
             binding.launcherBadge.beVisible()
             binding.launcherIcon.contentDescription = binding.root.context.resources.getQuantityString(
                 R.plurals.notification_count, count, count
             )
+
+            // Only pop in on the gone->visible transition, not every recycled bind -
+            // otherwise this would replay on every scroll.
+            if (wasHidden) {
+                binding.launcherBadge.scaleX = BADGE_POP_START_SCALE
+                binding.launcherBadge.scaleY = BADGE_POP_START_SCALE
+                binding.launcherBadge.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(BADGE_POP_DURATION)
+                    .setInterpolator(OvershootInterpolator())
+                    .start()
+            }
         } else {
             binding.launcherBadge.beGone()
             binding.launcherIcon.contentDescription = null
@@ -273,6 +289,8 @@ class LaunchersAdapter(
         private const val LAUNCHER_SCALE_DOWN_DURATION = 50L
         private const val LAUNCHER_ALPHA_NORMAL = 255
         private const val LAUNCHER_ALPHA_PRESSED = 220
+        private const val BADGE_POP_START_SCALE = 0.4f
+        private const val BADGE_POP_DURATION = 220L
     }
 }
 

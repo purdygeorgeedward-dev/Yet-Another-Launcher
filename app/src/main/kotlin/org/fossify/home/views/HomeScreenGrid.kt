@@ -115,6 +115,8 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
     private var baseTextSizePx: Float = 0f
     private var baseTypeface: Typeface? = null
     private var appliedFontChoice: Int? = null
+    private var badgePulseScale = 1f
+    private var badgePulseAnimator: ValueAnimator? = null
     private var folderTitleTextPaint: TextPaint
     private var dragShadowCirclePaint: Paint
     private var emptyPageIndicatorPaint: Paint
@@ -1249,8 +1251,27 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
 
     // Called from MainActivity when NotificationBadgeStore's counts change, so a
     // notification arriving/clearing shows up on the grid without waiting for some
-    // unrelated redraw to happen to trigger it.
-    fun refreshNotificationBadges() = redrawGrid()
+    // unrelated redraw to happen to trigger it. Also kicks a brief pop-in pulse on
+    // every badge at once - a shared animation across all badges rather than
+    // tracking which specific icon's count actually changed, which keeps this
+    // simple and avoids per-item animation-state bugs for a purely decorative touch.
+    fun refreshNotificationBadges() {
+        redrawGrid()
+        startBadgePulseAnimation()
+    }
+
+    private fun startBadgePulseAnimation() {
+        badgePulseAnimator?.cancel()
+        badgePulseAnimator = ValueAnimator.ofFloat(0.5f, 1f).apply {
+            duration = BADGE_PULSE_DURATION
+            interpolator = OvershootInterpolator()
+            addUpdateListener {
+                badgePulseScale = it.animatedValue as Float
+                redrawGrid()
+            }
+            start()
+        }
+    }
 
     private fun getFakeWidth() = width - sideMargins.left - sideMargins.right
 
@@ -1980,11 +2001,13 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         val badgeRadius = iconSize * 0.16f
         val centerX = iconBounds.right - badgeRadius
         val centerY = iconBounds.top + badgeRadius
-        drawCircle(centerX, centerY, badgeRadius, badgeBackgroundPaint)
+        withScale(badgePulseScale, badgePulseScale, centerX, centerY) {
+            drawCircle(centerX, centerY, badgeRadius, badgeBackgroundPaint)
 
-        val label = if (count > 99) "99+" else count.toString()
-        val textY = centerY - (badgeTextPaint.ascent() + badgeTextPaint.descent()) / 2
-        drawText(label, centerX, textY, badgeTextPaint)
+            val label = if (count > 99) "99+" else count.toString()
+            val textY = centerY - (badgeTextPaint.ascent() + badgeTextPaint.descent()) / 2
+            drawText(label, centerX, textY, badgeTextPaint)
+        }
     }
 
     private fun Canvas.drawItemInCell(item: HomeScreenGridItem, cell: Rect) {
@@ -2315,6 +2338,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
         private const val FOLDER_CLOSE_HOLD_THRESHOLD = 300L
         private const val FOLDER_ANIMATION_DURATION = 200L
         private const val BADGE_BACKGROUND_COLOR = 0xFFF44336.toInt() // Material red 500
+        private const val BADGE_PULSE_DURATION = 220L
     }
 }
 
