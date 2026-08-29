@@ -64,6 +64,7 @@ import org.fossify.home.databinding.HomeScreenGridBinding
 import org.fossify.home.extensions.config
 import org.fossify.home.extensions.getDrawableForPackageName
 import org.fossify.home.extensions.homeScreenGridItemsDB
+import org.fossify.home.extensions.shouldRenderNotificationBadges
 import org.fossify.home.helpers.AccessibilityFontHelper
 import org.fossify.home.helpers.ColorBlindFilters
 import org.fossify.home.helpers.ITEM_TYPE_FOLDER
@@ -1831,10 +1832,25 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
             val item = gridItems.firstOrNull { it.id?.toInt() == virtualViewId }
                 ?: throw IllegalArgumentException("Unknown id")
 
-            node.text = if (item.type == ITEM_TYPE_WIDGET) {
+            val baseLabel = if (item.type == ITEM_TYPE_WIDGET) {
                 item.providerInfo?.loadLabel(context.packageManager) ?: item.title
             } else {
                 item.title
+            }
+
+            val badgeCount = if (context.shouldRenderNotificationBadges() && item.type == ITEM_TYPE_ICON) {
+                NotificationBadgeStore.getCount(item.packageName)
+            } else {
+                0
+            }
+
+            node.text = if (badgeCount > 0) {
+                val notificationsText = context.resources.getQuantityString(
+                    R.plurals.notification_count, badgeCount, badgeCount
+                )
+                "$baseLabel, $notificationsText"
+            } else {
+                baseLabel
             }
 
             val viewBounds = if (item == currentlyOpenFolder?.item) {
@@ -2029,7 +2045,7 @@ class HomeScreenGrid(context: Context, attrs: AttributeSet, defStyle: Int) :
             drawable?.colorFilter = ColorBlindFilters.getColorFilter(context.config.colorBlindMode)
             drawable?.draw(this)
 
-            if (context.config.showNotificationBadges && item.type == ITEM_TYPE_ICON && drawable != null) {
+            if (context.shouldRenderNotificationBadges() && item.type == ITEM_TYPE_ICON && drawable != null) {
                 val badgeCount = NotificationBadgeStore.getCount(item.packageName)
                 if (badgeCount > 0) {
                     drawNotificationBadge(drawable.bounds, badgeCount)

@@ -62,6 +62,9 @@
     <string name="haptic_intensity_low">Low</string>
     <string name="haptic_intensity_medium">Medium</string>
     <string name="haptic_intensity_high">High</string>
+    <string name="reset_accessibility_settings">Reset accessibility settings to defaults</string>
+    <string name="reset_accessibility_confirm">Reset all accessibility settings (font, text size, contrast, color blind mode, icon position, haptics, gaming/meeting mode, dark mode scheduling, gradient folders, glassmorphism) to their defaults?</string>
+    <string name="reset_accessibility_done">Accessibility settings reset</string>
     <string name="lock_device_admin_warning">Deactivating admin permission will disable the double tap to lock screen feature.</string>
     <!--
         Haven't found some strings? There's more at

@@ -29,6 +29,7 @@ import org.fossify.home.activities.SimpleActivity
 import org.fossify.home.databinding.ItemLauncherLabelBinding
 import org.fossify.home.extensions.animateScale
 import org.fossify.home.extensions.config
+import org.fossify.home.extensions.shouldRenderNotificationBadges
 import org.fossify.home.helpers.AccessibilityFontHelper
 import org.fossify.home.helpers.ColorBlindFilters
 import org.fossify.home.helpers.ICON_LABEL_POSITION_HIDDEN
@@ -126,7 +127,7 @@ class LaunchersAdapter(
     // Same red circle + count as HomeScreenGrid's drawNotificationBadge(), just as a
     // real view here instead of a canvas draw since the drawer is a RecyclerView.
     private fun applyNotificationBadge(binding: ItemLauncherLabelBinding, launcher: AppLauncher) {
-        val count = if (activity.config.showNotificationBadges) {
+        val count = if (activity.shouldRenderNotificationBadges()) {
             NotificationBadgeStore.getCount(launcher.packageName)
         } else {
             0
@@ -135,8 +136,12 @@ class LaunchersAdapter(
         if (count > 0) {
             binding.launcherBadge.text = if (count > 99) "99+" else count.toString()
             binding.launcherBadge.beVisible()
+            binding.launcherIcon.contentDescription = binding.root.context.resources.getQuantityString(
+                R.plurals.notification_count, count, count
+            )
         } else {
             binding.launcherBadge.beGone()
+            binding.launcherIcon.contentDescription = null
         }
     }
 

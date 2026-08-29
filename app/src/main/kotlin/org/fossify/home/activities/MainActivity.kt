@@ -39,6 +39,8 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.net.toUri
 import androidx.core.view.GestureDetectorCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.core.view.iterator
 import androidx.viewbinding.ViewBinding
@@ -255,10 +257,27 @@ class MainActivity : SimpleActivity(), FlingListener {
         binding.homeScreenGrid.root.appWidgetHost.startListening()
     }
 
+    // Manual toggle only - not tied to detecting whether a game is actually running,
+    // which would need usage-stats access. User turns it on/off themselves in
+    // Settings; this just applies/reverts the immersive state each time the launcher
+    // resumes, and onPause always restores the bars so it can never leak into
+    // whatever app the user switches to next.
+    private fun applyGamingModeImmersive() {
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        if (config.gamingMode) {
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+        } else {
+            controller.show(WindowInsetsCompat.Type.systemBars())
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         wasJustPaused = false
         refreshWallpaperSupportsDarkText()
+        applyGamingModeImmersive()
         Handler(Looper.getMainLooper()).postDelayed({
             if (isAllAppsFragmentExpanded() || isWidgetsFragmentExpanded()) {
                 updateStatusBarIcons(getProperBackgroundColor())
@@ -326,6 +345,7 @@ class MainActivity : SimpleActivity(), FlingListener {
     override fun onPause() {
         super.onPause()
         wasJustPaused = true
+        WindowInsetsControllerCompat(window, window.decorView).show(WindowInsetsCompat.Type.systemBars())
     }
 
     override fun onBackPressedCompat(): Boolean {

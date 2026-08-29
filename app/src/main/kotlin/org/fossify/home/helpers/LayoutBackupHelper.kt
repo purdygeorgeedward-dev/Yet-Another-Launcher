@@ -38,8 +38,8 @@ object LayoutBackupHelper {
     )
 
     fun buildBackupFilename(): String {
-        val timestamp = System.currentTimeMillis()
-        return "launcher-layout-backup-$timestamp.json"
+        val formatter = java.text.SimpleDateFormat("yyyy-MM-dd_HHmmss", java.util.Locale.US)
+        return "launcher-layout-backup-${formatter.format(java.util.Date())}.json"
     }
 
     fun exportLayout(context: Context): ExportResult {

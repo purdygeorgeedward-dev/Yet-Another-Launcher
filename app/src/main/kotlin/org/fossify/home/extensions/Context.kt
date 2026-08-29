@@ -87,6 +87,13 @@ fun Context.isNotificationBadgeAccessGranted(): Boolean {
     return NotificationManagerCompat.getEnabledListenerPackages(this).contains(packageName)
 }
 
+// Notification badges are opt-in, and both meeting mode and gaming mode - user-facing
+// "quiet down" toggles - suppress them entirely rather than just muting the count.
+// One shared check so the home screen and drawer can't drift out of sync on this.
+fun Context.shouldRenderNotificationBadges(): Boolean {
+    return config.showNotificationBadges && !config.meetingMode && !config.gamingMode
+}
+
 fun Context.isDefaultLauncher(): Boolean {
     return if (isQPlus()) {
         with(roleManager) {

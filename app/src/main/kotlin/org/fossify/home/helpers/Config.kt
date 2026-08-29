@@ -131,4 +131,21 @@ class Config(context: Context) : BaseConfig(context) {
     var showNotificationBadges: Boolean
         get() = prefs.getBoolean(SHOW_NOTIFICATION_BADGES, false)
         set(showNotificationBadges) = prefs.edit().putBoolean(SHOW_NOTIFICATION_BADGES, showNotificationBadges).apply()
+
+    // Deliberately excludes showNotificationBadges: that one required a real
+    // permission grant flow, resetting it silently would be a surprising way to
+    // revoke something the user went out of their way to set up.
+    fun resetAccessibilitySettings() {
+        highContrastMode = false
+        accessibilityFont = FONT_DEFAULT
+        textSizeLevel = TEXT_SIZE_NORMAL
+        colorBlindMode = COLOR_BLIND_NONE
+        iconLabelPosition = ICON_LABEL_POSITION_BOTTOM
+        hapticFeedbackIntensity = DEFAULT_HAPTIC_INTENSITY
+        gamingMode = false
+        meetingMode = false
+        darkModeScheduling = false
+        gradientFolderBackground = false
+        glassmorphismUi = false
+    }
 }

@@ -95,6 +95,7 @@ class SettingsActivity : SimpleActivity() {
         setupDarkModeScheduling()
         setupGradientFolderBackground()
         setupGlassmorphismUi()
+        setupResetAccessibilitySettings()
         setupLanguage()
         setupManageHiddenIcons()
         updateTextColors(binding.settingsHolder)
@@ -629,6 +630,19 @@ class SettingsActivity : SimpleActivity() {
         binding.settingsGlassmorphismUiHolder.setOnClickListener {
             binding.settingsGlassmorphismUi.toggle()
             config.glassmorphismUi = binding.settingsGlassmorphismUi.isChecked
+        }
+    }
+
+    private fun setupResetAccessibilitySettings() {
+        binding.settingsResetAccessibilityHolder.setOnClickListener {
+            ConfirmationDialog(
+                activity = this,
+                message = getString(R.string.reset_accessibility_confirm)
+            ) {
+                config.resetAccessibilitySettings()
+                toast(R.string.reset_accessibility_done)
+                onResume()
+            }
         }
     }
 
